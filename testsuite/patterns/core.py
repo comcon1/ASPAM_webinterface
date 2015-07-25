@@ -1,5 +1,5 @@
 '''
- Classes for curve construction
+ Classes for curve construction.
 '''
 
 import numpy as np
@@ -13,7 +13,7 @@ global _p
 _p = Params()
 _p.minADC  = 0
 _p.maxADC  = 4005
-_p.stepADC = 1.
+_p.stepADC = 1. # DEPRECATED!
 
 class CombinedCurve(object):
 
@@ -70,11 +70,11 @@ class _CurvePartBase(object):
 
 class CPInitiator(_CurvePartBase):
 
-    def __init__(self, v):
+    def __init__(self, v, t=0, timestep=1):
         _CurvePartBase.__init__(self, 
-                np.array([0,v]), 
-                np.array([_p.stepADC,v]), 
-                np.array([[0,v],[_p.stepADC,v]]))
+                np.array([t,v]), 
+                np.array([t+timestep,v]), 
+                np.array([[t,v],[t+timestep,v]]))
 
 
 class CPRefilling(_CurvePartBase):

@@ -33,4 +33,5 @@ print cc.top
 
 
 plot(cc.data[:,0], cc.data[:,1])
+savetxt('test.curve', cc.data, fmt='%10d')
 show()
