@@ -1,22 +1,17 @@
 #!/usr/bin/python
 
 import cherrypy
+import os.path
+from config import *
 
-class IndexPage:
-    def index(self):
-        return '''
-        Hellow, guy!
-        '''
-    index.exposed = True
-
-
+from index import IndexPage
 root = IndexPage()
+from expreview import ExperimentReview
+root.expreview = ExperimentReview()
 
 print __file__
 
-import os.path
-curconf = os.path.join(os.path.dirname(__file__), \
-                '../../testsuite/testserver/server.conf')
+curconf = os.path.join(DQSROOTDIR, 'server.conf')
 
 if __name__ == '__main__':
     cherrypy.quickstart(root, config=curconf)

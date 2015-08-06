@@ -1,0 +1,4 @@
+<li>
+    <a href="##uri##">##name##</a>: ##nrats## rats, (##datestart##)
+    <div>##comment##</div>
+</li>

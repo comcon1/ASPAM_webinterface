@@ -1,0 +1,2 @@
+body, html { font-face: Arial; font-size: 8pt; }
+.ratcheckbox label:after { display:block; content: ''; }

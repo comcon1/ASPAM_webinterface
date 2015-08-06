@@ -1,2 +1,34 @@
-<!DOCTYPE page SYSTEM "page.dtd">
-<!-- some template shall appear here! -->
+<?xml version='1.0'?>
+<!-- TODO: DOCTYPE page SYSTEM "page.dtd" -->
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/css/index.css">
+
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Cache-Control" content="no-cache" />
+<meta http-equiv="Pragma-directive" content="no-cache" />
+<meta http-equiv="Cache-Directive" content="no-cache" />
+<meta http-equiv="Expires" content="##expires_date##" />
+
+<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+<h1>##prog_name## ##prog_version##</h1>
+<hr>
+<h2>Available experiments</h2>
+<ol>
+##experiments_list##
+</ol>
+<hr>
+<h2>Control panel</h2>
+<div class="cpanel">
+    <div>
+        <b>Current experiment:</b> <span>##current_experiment##</span>
+    </div>
+    <div>
+        <b>Manipulate:</b> <a href="#">Start</a> <a href="#">Stop</a> <a href="#">Pause</a>
+    </div>
+</div>
+</body>
+</html>
