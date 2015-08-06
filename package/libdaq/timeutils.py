@@ -11,13 +11,14 @@ def upper_day(ut):
     else:
         return uht + (24 - gmt.tm_hour)*3600
 
-def upper_hour(ut):
+def upper_hour(ut, mod=1):
+    assert(24 % mod == 0) # 24 should divide on mod ticker!
     umt = upper_minute(ut)
     gmt = time.gmtime(umt)
-    if gmt.tm_min == 0:
-        return umt
+    if (gmt.tm_min == 0) and (gmt.tm_hour % mod == 0):
+        return umt            
     else:
-        return umt + (60 - gmt.tm_min)*60
+        return upper_hour(umt + (60 - gmt.tm_min)*60, mod)
 
 def upper_minute(ut):
     gmt = time.gmtime(ut)
