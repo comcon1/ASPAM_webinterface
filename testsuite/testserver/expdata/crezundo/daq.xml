@@ -1,0 +1,13 @@
+<?xml version='1.0'?>
+<experiment nrats="7" datestart="1437980400" run="0">
+    <comment>Second random experiment..</comment>
+    <rats>
+        <rat id="1"  datestart="1437980400" />
+        <rat id="2"  datestart="1437980400" />
+        <rat id="3"  datestart="1437980400" />
+        <rat id="4"  datestart="1437980400" />
+        <rat id="5"  datestart="1437980400" />
+        <rat id="6"  datestart="1437980400" />
+        <rat id="7"  datestart="1437980400" />
+    </rats>
+</experiment>
