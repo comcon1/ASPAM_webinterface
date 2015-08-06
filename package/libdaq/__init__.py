@@ -17,6 +17,7 @@ import os.path, md5
 # exports
 
 from libdaq import RawCurveAnalyzer
+from libdaq import RotCurveAnalyzer
 from loader import Loader
 from core import CurrentCachable
 import timeutils as tu

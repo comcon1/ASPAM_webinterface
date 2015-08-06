@@ -8,7 +8,7 @@ import timeutils as tmu
 import os
 
 
-class RawCurveAnalyzer:
+class RawCurveAnalyzer(object):
 
     def __init__(self, fname):
         print 'Raw Curve Analyzer starts.'
@@ -52,6 +52,10 @@ class RawCurveAnalyzer:
             p = p[list(set(range(p.shape[0]))-set(range(ia,ib)))]
         return p
 
+    @property
+    def loader(self):
+        return self._ldr
+
 class DrinkCurveAnalyzer(RawCurveAnalyzer):
     
     def detectRefills(self):
@@ -65,6 +69,25 @@ class DrinkCurveAnalyzer(RawCurveAnalyzer):
 
 class RotCurveAnalyzer(RawCurveAnalyzer):
     '''Class for analyzing data of rat wheel rotations. '''
+        
+    _cumdata = None
+    _rawdata = None
+    
+    @property
+    def rawdata(self):
+        if self._rawdata == None:
+            rawdata = self.getData(-1,-1)
+            print rawdata
+            self._rawdata = np.array(rawdata.tolist(), dtype=np.int32)
+        return self._rawdata
+    
+    @property
+    def cumdata(self):
+        '''Return numerical integral of data'''
+        if (self._cumdata == None):
+            self._cumdata = np.copy(self.rawdata)
+            self._cumdata[:,1:] = np.cumsum(self.rawdata[:,1:], axis=0)
+        return self._cumdata 
 
     def genPartialSums(self, period='h'):
         '''Generate array of sums over hours and days. '''
@@ -89,6 +112,6 @@ class RotCurveAnalyzer(RawCurveAnalyzer):
         '''Use -1 for start for the beginning and -1 for stop at the very
         end.'''
         # avoid skipping when analyzing rotations
-        super(RotCurveAnalyzer, self).getData(start, stop, 1)
+        return super(RotCurveAnalyzer, self).getData(start, stop, 1)
 
 
