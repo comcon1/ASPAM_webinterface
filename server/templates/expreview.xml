@@ -24,23 +24,61 @@
 <tr>
     <td width="60%">
 <img id="simplot" src="##simplot##">
+<div class="download-image">
+  [<a href="##download_simplot_pdf##" target="_blank" >PDF</a>]
+  [<a href="##download_simplot_png##" target="_blank" >PNG</a>]
+  [<a href="##download_simplot_raw##" target="_blank" >RAW</a>]
+</div>
     </td>
     <td rowspan="2">
-<div class="ratcheckbox">
-##ratcheckbox##
-</div>
 <form action="/expreview/" method="POST">
-<input type="hidden" name="ratlist" id="ratlist_hdn" value="">
-<input type="hidden" name="zoom" id="zoom_hdn" value="1.0">
-<input type="hidden" name="code" id="code_hdn" value="##expcode##">
-<input type="hidden" name="nrats" id="nrats_hdn" value="##nrats##">
-<input type="submit" value="Apply">
+<table style="border: 1px solid black;">
+<tr>
+<td>
+ <div class="ratcheckbox">
+ ##ratcheckbox##
+ </div>
+ </td>
+ <td>
+ <div>
+ <label>OY units: </label>
+ ##unitscombo##
+ </div>
+ <div>
+ <label>Scale: </label>
+ ##scalecombo##
+ </div>
+<hr>
+ <div>
+  <label>From: </label>
+ ##fromdate##
+ </div>
+ <div>
+  <label>Till: </label>
+ ##tilldate##
+ </div>
+ </td>
+</tr>
+</table>
+
+<input type="hidden" name="ratlist" id="ratlist_hdn" value="" />
+<input type="hidden" name="code" id="code_hdn" value="##expcode##" />
+<input type="hidden" name="nrats" id="nrats_hdn" value="##nrats##" />
+<input type="submit" value="Apply" class="apply" />
+<input type="checkbox" id="force_cache_regen" name="regen_cache" ##regenchecked##/><label for="force_cache_regen">Regenerate cache</label>
 </form>
+ <a href="/ratstat?code=##expcode##">Rat averaged statistics</a>
+ <a href="/timestat?code=##expcode##">Time cumulated statistics</a>
     </td>
 </tr>
 <tr>
     <td>
 <img id="cumplot" src="##cumplot##">
+<div class="download-image">
+  [<a href="##download_cumplot_pdf##" target="_blank" >PDF</a>]
+  [<a href="##download_cumplot_png##" target="_blank" >PNG</a>]
+  [<a href="##download_cumplot_raw##" target="_blank" >RAW</a>]
+</div>
     </td>
 </tr>
 </table>
