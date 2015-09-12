@@ -1,0 +1,76 @@
+<?xml version='1.0'?>
+<!-- TODO: DOCTYPE page SYSTEM "page.dtd" -->
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/css/index.css">
+
+<script type="text/javascript" language="javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" language="javascript" src="/js/experview.js"></script>
+
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Cache-Control" content="no-cache" />
+<meta http-equiv="Pragma-directive" content="no-cache" />
+<meta http-equiv="Cache-Directive" content="no-cache" />
+<meta http-equiv="Expires" content="##expires_date##" />
+
+<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+<title>Rats averaged statistics of the experiment &laquo;##expcode##&raquo;</title>
+</head>
+<body>
+<h1>##expcode##</h1>
+<hr>
+<table>
+<tr>
+    <td width="60%">
+<img id="plot" src="##plot##">
+<div class="download-image">
+  [<a href="##download_pdf##" target="_blank" >PDF</a>]
+  [<a href="##download_png##" target="_blank" >PNG</a>]
+  [<a href="##download_raw##" target="_blank" >RAW</a>]
+</div>
+    </td>
+    <td>
+<form action="/ratstat/" method="POST">
+<table style="border: 1px solid black;">
+<tr>
+<td>
+ <div class="ratcheckbox">
+ ##ratcheckbox##
+ </div>
+ </td>
+ <td>
+ <div>
+ <label>OY units: </label>
+ ##unitscombo##
+ </div>
+ <div>
+ <label>Scale: </label>
+ ##scalecombo##
+ </div>
+<hr>
+ <div>
+  <label>From: </label>
+ ##fromdate##
+ </div>
+ <div>
+  <label>Till: </label>
+ ##tilldate##
+ </div>
+ </td>
+</tr>
+</table>
+
+<input type="hidden" name="ratlist" id="ratlist_hdn" value="" />
+<input type="hidden" name="code" id="code_hdn" value="##expcode##" />
+<input type="hidden" name="nrats" id="nrats_hdn" value="##nrats##" />
+<input type="submit" value="Apply" class="apply" />
+<input type="checkbox" id="force_cache_regen" name="regen_cache" ##regenchecked##/><label for="force_cache_regen">Regenerate cache</label>
+</form>
+ <a href="/expreview?code=##expcode##">Experiment review</a>
+ <a href="/timestat?code=##expcode##">Time cumulated statistics</a>
+    </td>
+</tr>
+</table>
+</body>
+</html>

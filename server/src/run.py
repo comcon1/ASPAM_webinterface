@@ -8,6 +8,8 @@ from index import IndexPage
 root = IndexPage()
 from expreview import ExperimentReview
 root.expreview = ExperimentReview()
+from ratstat import RatStatistics
+root.ratstat = RatStatistics()
 
 print __file__
 
