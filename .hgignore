@@ -1,2 +1,5 @@
 /.*\.pyc$
 /\..*\.sw[po]$
+/server/src/cherrypy$
+/testsuite/patterns/test\.\.*$
+/daqsoft\.*$
