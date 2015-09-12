@@ -77,7 +77,6 @@ class RotCurveAnalyzer(RawCurveAnalyzer):
     def rawdata(self):
         if self._rawdata == None:
             rawdata = self.getData(-1,-1)
-            print rawdata
             self._rawdata = np.array(rawdata.tolist(), dtype=np.int32)
         return self._rawdata
     
@@ -87,31 +86,59 @@ class RotCurveAnalyzer(RawCurveAnalyzer):
         if (self._cumdata == None):
             self._cumdata = np.copy(self.rawdata)
             self._cumdata[:,1:] = np.cumsum(self.rawdata[:,1:], axis=0)
-        return self._cumdata 
+        return self._cumdata
 
     def genPartialSums(self, period='h'):
         '''Generate array of sums over hours and days. '''
         pass
 
-    def extractTimePeriod(self, starth, stoph, start, stop):
-        '''Generate array of sums over specific period. Period can be
-        overnight. ``start'' and ``stop'' have the same meaning as in getData()
-        method.'''
-        data = self.getData(start, stop)
-        ints = tmu.form_periodic_intervals(starth, stoph)
-        inds = [ (data['t'].searchsorted(i), data['t'].searchsorted(j)) \
-                for i,j in ints ]
-        res = zeros(len(inds), dtype=data.dtype)
-        res['t'] = [ i for i,j in ints ]
-        for field in data.dtype.names[1:]:
-            res[field] = [ data[field][i:j].sum() for i,j in inds ]
-        return res
+    def getDayNightData(self, daystart, morning, evening, startut, stoput):
+        '''Generate array of sums over days, daytimes and nights. ``start'' and 
+        ``stop'' have the same meaning as in getData() method. Returns arrays
+        for every rat with partial sums (days, lights, nights). '''
+        data = self.getData(startut, stoput, raw=True)
+        print 'DDDDDDDD', data.shape
+        days = tmu.form_periodic_days(daystart, startut, stoput)
+        daylight = tmu.form_inday_intervals(morning, evening, days)
+        light_mask = np.zeros(data.shape[0], dtype=np.int8)
+        for a,b in daylight:
+            light_mask[data[:,0].searchsorted(a):data[:,0].searchsorted(b)].fill(1)
+        daynight = tmu.form_inday_intervals(evening, morning, days)
+        night_mask = np.zeros(data.shape[0], dtype=np.int8)
+        for a,b in daynight:
+            night_mask[data[:,0].searchsorted(a):data[:,0].searchsorted(b)].fill(1)
+        
+        resday = np.zeros((len(days),data.shape[1]))
+        resday[:,0] = [ tmu.lower_day(i) for i,j in days ]
+        resni = np.copy(resday)
+        resli = np.copy(resday)
+        i = 0
+        for a,b in days:
+            i0,i1 = data[:,0].searchsorted(a), data[:,0].searchsorted(b)
+            print 'NIGHT MINUTES', night_mask[i0:i1].sum()
+            _da = np.sum(data[i0:i1,1:], axis=0)
+            print 'TOTAL DAY', _da
+            _ni = np.sum(data[i0:i1,1:] * \
+                np.vstack([night_mask[i0:i1]]*(data.shape[1]-1)).T, \
+                axis=0)
+            _li = np.sum(data[i0:i1,1:] * \
+                np.vstack([light_mask[i0:i1]]*(data.shape[1]-1)).T, \
+                axis=0)
+            resday[i,1:] = _da
+            resni[i,1:] = _ni
+            resli[i,1:] = _li
+            i+=1
+        
+        return resday, resli, resni
 
 
-    def getData(self, start, stop):
+    def getData(self, start, stop, raw=False):
         '''Use -1 for start for the beginning and -1 for stop at the very
-        end.'''
+        end. raw=True for using simple rectangle matrix format for output.'''
         # avoid skipping when analyzing rotations
-        return super(RotCurveAnalyzer, self).getData(start, stop, 1)
+        ret = super(RotCurveAnalyzer, self).getData(start, stop, 1)
+        if raw:
+            ret = np.array(ret.tolist(), dtype=np.int32)
+        return ret
 
 
