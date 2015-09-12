@@ -1,0 +1,24 @@
+<?xml version='1.0'?>
+<!-- TODO: DOCTYPE page SYSTEM "page.dtd" -->
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/css/index.css">
+
+<script type="text/javascript" language="javascript" src="/js/jquery.min.js"></script>
+<script type="text/javascript" language="javascript" src="/js/expstat.js"></script>
+
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Cache-Control" content="no-cache" />
+<meta http-equiv="Pragma-directive" content="no-cache" />
+<meta http-equiv="Cache-Directive" content="no-cache" />
+<meta http-equiv="Expires" content="##expires_date##" />
+
+<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+<title>Statistics of the experiment &laquo;##expcode##&raquo;</title>
+</head>
+<body>
+<h1>##expcode##</h1>
+<hr>
+</body>
+</html>
