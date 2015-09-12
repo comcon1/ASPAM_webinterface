@@ -12,14 +12,22 @@ if __name__ == '__main__':
     print 'This is a module.'
     sys.exit(1)
 
-sys.path.append('../../package')
+from .. import params
 
-from libdaq import _workingDir
-from libdaq.core import CurrentCachable 
-from libdaq import RotCurveAnalyzer 
-from libdaq.loader import Loader
-import libdaq.timeutils as tmu
+from ..libdaq import _workingDir
+from ..libdaq.core import CurrentCachable 
+from ..libdaq import RotCurveAnalyzer 
+from ..libdaq.loader import Loader
+from ..libdaq import timeutils as tmu
+
 from matplotlib.mlab import frange
+import matplotlib as mpl
+
+mpl.rcParams['backend'] = 'agg'
+mpl.interactive(False)
+import matplotlib.pyplot as plt
+plt.style.use(os.path.join(os.path.dirname(__file__),'./current.mplstyle'))
+
 import numpy as np
 import time
 
@@ -36,9 +44,9 @@ class ImageParameters(object):
         self._bt, self._et = loader.getPartNo(0,flag=1)[0],\
             loader.getPartNo(loader.getNumParts()-1, flag=1)[1]
         self._steps = int( (self._et - self._bt) / self._tstep )
-
         self._start = None
         self._stop = None
+        self._cacheregen = False
 
         self._figsize = (7,7)
         del dat
@@ -49,15 +57,20 @@ class ImageParameters(object):
         if start == None:
             self._start = 0
         else:
-            if type(start) != int:
-                raise AttributeError('start should be integer.')
+            if int(start) != start:
+                raise AttributeError('start should be integer; not '+str(type(start)))
             self._start = ( start + self._steps ) % self._steps
         if stop == None:
             self._stop = self._steps
         else:
-            if type(stop) != int:
-                raise AttributeError('start should be integer.')
+            if int(stop) != stop:
+                raise AttributeError('start should be integer.'+str(type(stop)))
             self._stop = ( stop + self._steps ) % self._steps
+    
+    def setDiapT(self, start=None, stop=None):
+        bp = None if start == None else (max(start,self.bt) - self.bt) / self.tstep
+        ep = None if stop == None else (min(stop,self.et-1) - self.bt) / self.tstep
+        self.setDiap(bp, ep)
 
     def __hash__(self):
         return hash((self._tstep,self._nrats,self._bt, self._et, self._start, \
@@ -69,6 +82,13 @@ class ImageParameters(object):
     def setRatList(self, rl):
         assert(len(rl) > 0 and len(rl) <= self.nrats)
         self._ratlist = tuple(rl)
+    
+    def setRegen(self):
+        self._cacheregen = True
+        
+    @property
+    def cacheregen(self):
+        return self._cacheregen
 
     @property
     def figsize(self):
@@ -101,8 +121,8 @@ class ImageParameters(object):
     @property 
     def ratlist(self):
         return self._ratlist
+        
 
-plt = None
 
 class ImageRequest(CurrentCachable):
 
@@ -122,6 +142,8 @@ class ImageRequest(CurrentCachable):
         return "ImageRequest-"+hex(hash(self._req))[3:]
 
     def checkCacheData(self):
+        if self._req.cacheregen:
+            raise BaseException('RegenCache Flag was turned on!')
         for f in self._cachelist:
             fn = os.path.join(self._dir,f)
             print 'Cache file ',fn, os.stat(fn).st_size
@@ -132,12 +154,11 @@ class ImageRequest(CurrentCachable):
         if precis[0] == 'h':
             mods = [12,6,4,3,2,1]
             t = [0]*51
-            while len(t) > 50 and len(mods):
+            # 4 ticks per inch is OK!
+            while len(t) > 4*self._req.figsize[0] and len(mods):
                 mm = mods.pop()
                 gm_1hour = tmu.upper_hour(ta[0], mod=mm)
                 t = map(int,list(frange(gm_1hour, ta[-1], 3600*mm)))
-
-            print ta[0], ta[-1]
             if precis[1] == '0':
                 zers = []
                 for tt in t:
@@ -147,11 +168,20 @@ class ImageRequest(CurrentCachable):
                     t.pop(zers.pop())
             l = [ time.strftime('%H', time.gmtime(int(ii))) for ii in t ]
         elif precis[0] == 'd':
-            gm_1day = tmu.upper_day(ta[0])
+            if precis[1] == 'c': # at the center of a day
+                gm_1day = tmu.upper_day(ta[0]) 
+                gm_1day = gm_1day - 12*3600 if gm_1day - 12*3600 > ta[0] else gm_1day + 12*3600
+                fmt = '%d.%m'
+            elif precis[1] == 'l':
+                gm_1day = tmu.upper_day(ta[0])
+                fmt = '%d'
+            else:
+                AttributeError('Precise code %s is incorrect' % precis)
             t = map(int,list(frange(gm_1day, ta[-1],(3600*24))))
             if t[-1] > ta[-1]:
                 t.pop()
-            l = [ time.strftime('%d', time.gmtime(int(ii))) for ii in t ]
+                
+            l = [ time.strftime(fmt, time.gmtime(int(ii))) for ii in t ]
             print t,l
         else:
             raise NotImplementedError('Precis type ``%s'' not implemented' \
@@ -170,27 +200,40 @@ class ImageRequest(CurrentCachable):
             self._drawData = np.array(data.tolist(), dtype=np.int64)
             print 'Rats selected: ',  list(set(self._req.ratlist) | {0})
             self._drawData = self._drawData[:, list(set(self._req.ratlist) | {0})]
+            self._drawData[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1
         return self._drawData
 
 
     def _init_wo_cache(self):
-        import matplotlib.pyplot as plt
         data = self.drawData
-        mticks, mtlbls = self._genticks(data[:,0], 'h0',)
-        jticks, jtlbls = self._genticks(data[:,0], 'd')
+        mticks, mtlbls = self._genticks(data[:,0], 'h1',)
+        jticks, jtlbls = self._genticks(data[:,0], 'dc')
         # drawing
         f = plt.figure(figsize=self._req.figsize)
+        self._before_drawing(f)
         ax = plt.axes()
 #        f.add_axes(ax)
+        pls = [] # plot lines
         for i in range(data.shape[1]-1):
-            plt.plot(data[:,0], data[:,i+1], '-', lw=2, ms=2)
+            pp = plt.plot(data[:,0], data[:,i+1], '-', lw=2, ms=2, color=params.curves['r%d'%i].color)
+            pls.append(pp[0])
         ax.set_xticks(mticks, minor=True)
         ax.set_xticklabels(mtlbls, minor=True, fontsize=8)
         ax.set_xticks(jticks, minor=False)
         ax.set_xticklabels(jtlbls, minor=False, fontsize=12)
+        ax.tick_params(pad=20, axis='x', which='major')
+        ax.set_ylabel('Length, meters' if self._req.Yunits == 'meters' else 'Turns')
+        ax.set_xlabel('Date (d.m) and time (h)')
         # saving
         ax.set_xlim(data[0,0], data[-1,0])
+        self._after_drawing(f,pls)
         self._saveData(f)
+    
+    def _before_drawing(self, fig):
+        pass
+    
+    def _after_drawing(self, fig, pls):
+        pass
 
     def _saveData(self, fig):
         print 'Generating figure..'
@@ -215,23 +258,61 @@ class ImageRequest(CurrentCachable):
 # *****************************************
 
 class RotImageParameters(ImageParameters):
-
+    
+    ''' daynightFlag - 000 perbit flag. 1st - day, 2nd - daylight, 3rd - night '''
+    
     _typlst = ['raw', 'cumulative', 'partsum', 'daynight']
     _pt = 'raw' # default value
-
+    _Yunits = 'meters'
+    _dnflag = 7
+    _tintervals = (0,9*60,21*60)
     
-    def setPlotType(self, typ):
-        assert(type(typ) == str)
-        assert(typ in self._typlst)
-        self._pt = typ
-
     def __hash__(self):
         return super(RotImageParameters, self).__hash__() ^ \
-                hash(self.plotType)
+                hash((self.plotType,self.Yunits,self.daynightFlag,\
+                self.tintervals))
 
     @property 
     def plotType(self):
         return self._pt
+    
+    @plotType.setter
+    def plotType(self, typ):
+        assert(type(typ) == str)
+        assert(typ in self._typlst)
+        self._pt = typ    
+
+    @property
+    def Yunits(self):
+        return self._Yunits
+    
+    @Yunits.setter
+    def Yunits(self, units):
+        if units in ['meters', 'turns']:
+            self._Yunits = units
+        else:
+            raise AttributeError('Bad units value!')
+        
+    @property
+    def daynightFlag(self):
+        return self._dnflag
+    
+    @daynightFlag.setter
+    def daynightFlag(self, f):
+        assert(f in [1,2,3,4,5,6,7])
+        self._dnflag = f
+    
+    @property
+    def tintervals(self):
+        return self._tintervals
+    
+    @tintervals.setter
+    def tintervals(self, dln):
+        assert(len(dln) == 3)
+        assert(dln[0] < 24*60 and dln[0] > 0)
+        assert(dln[1] < 24*60 and dln[1] > 0)
+        assert(dln[2] < 24*60 and dln[2] > 0)
+        self._tintervals = tuple(dln)
 
 class RotImageRequest(ImageRequest):
     
@@ -252,14 +333,119 @@ class RotImageRequest(ImageRequest):
             starti = data[:,0].searchsorted( self._req.startt )
             stopi = data[:,0].searchsorted( self._req.stopt )
             data = data[starti:stopi,list(set(self._req.ratlist)|{0})]
+            data[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1
             self._drawData = np.copy(data)
         elif self._req.plotType == 'partsum':
             raise NotImplementedError('Unimplemented plotType'\
                     +self._req.plotType)
         elif self._req.plotType == 'daynight':
-            raise NotImplementedError('Unimplemented plotType'\
-                    +self._req.plotType)
+            day,light,night = self._rca.getDayNightData(self._req.tintervals[0], \
+                self._req.tintervals[1], self._req.tintervals[2], self._req.startt, \
+                self._req.stopt)
+            day = day[:,list(set(self._req.ratlist)|{0})]
+            light = light[:,list(set(self._req.ratlist)|{0})]
+            night = night[:,list(set(self._req.ratlist)|{0})]
+            # time, DAY mean, std, LIGHT mean, std, NIGHT mean std
+            #TODO: make correct 1-tailed quantile
+            dd = np.zeros((day.shape[0],7))
+            dd[:,0] = day[:,0]
+            dd[:,1] = np.mean(day[:,1:], axis=1)
+            dd[:,2] = np.std(day[:,1:], axis=1) 
+            dd[:,3] = np.mean(light[:,1:], axis=1)
+            dd[:,4] = np.std(light[:,1:], axis=1) 
+            dd[:,5] = np.mean(night[:,1:], axis=1)
+            dd[:,6] = np.std(night[:,1:], axis=1)
+            dd[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1
+            self._drawData = dd
         else:
             raise AttributeError('Unknown plotType '+self._req.plotType)
         # finally..
         return self._drawData
+        
+    def _init_wo_cache(self):
+        if self._req.plotType in ['cumulative','raw']:
+            super(RotImageRequest, self)._init_wo_cache()
+            return
+        if self._req.plotType == 'daynight':
+            self._drawDN()
+            return
+    
+    def _drawDN(self):
+        data = self.drawData
+        # drawing
+        f = plt.figure(figsize=self._req.figsize)
+        self._before_drawing(f)
+        ax = plt.axes()
+        pls = [] # bar patches
+        bitcount = 1 if self._req.daynightFlag in [1,2,4] else \
+                    2 if self._req.daynightFlag in [3,5,6] else \
+                     3
+        ndays = data.shape[0]        
+        xs = np.linspace(0, (bitcount+1)*(ndays-1), ndays)
+        print xs
+        print data
+        shift = 1        
+        if self._req.daynightFlag & 1: # DAY
+            pp = plt.bar(xs + shift, data[:,1], yerr=data[:,2], width=1, color=params.daynight.day.bar.facecolor)
+            pls.append(pp[0])
+            shift += 1
+        if self._req.daynightFlag & 2: # LIGHT
+            pp = plt.bar(xs + shift, data[:,3], yerr=data[:,4], width=1, color=params.daynight.light.bar.facecolor)
+            pls.append(pp[0])
+            shift += 1
+        if self._req.daynightFlag & 4: # NIGHT
+            pp = plt.bar(xs + shift, data[:,5], yerr=data[:,6], width=1, color=params.daynight.night.bar.facecolor)
+            pls.append(pp[0])
+        # saving
+        self._after_drawing(f,pls)
+        self._saveData(f)
+
+class RotImageDownload(RotImageRequest):
+    
+    def __str__(self):
+        return 'downloads'
+    
+    def __init__(self, rca, req, tpd):
+        ''' *string* tpd: type of download. May be 'csv', 'png', 'pdf' '''
+        assert (tpd in ['csv', 'png', 'pdf'])
+        self._tpd = tpd
+        super(RotImageDownload, self).__init__(rca, req)
+        
+    def checkCacheData(self):
+        self._ifn = hex(hash(self._req))[3:] + '.'+self._tpd
+        self._cachelist = []
+        raise BaseException('Generating downloading data. Caching is turned off.')
+        
+    def _before_drawing(self, fig):
+        # including legend to the right
+        fig.set_figheight( max (fig.get_figheight(), 0.25*len(self._req.ratlist)+0.8) )
+        fig.set_figwidth(fig.get_figwidth() + float(params.download.legendwidth) )
+        fig.subplots_adjust( right = (fig.get_figwidth() - float(params.download.legendwidth))/fig.get_figwidth() )
+    
+    def _init_wo_cache(self):
+        if self._tpd == 'csv':
+            return
+        else:
+            super(RotImageDownload, self)._init_wo_cache()
+        
+    def _after_drawing(self, fig, lines):
+        #TODO: nice axes margin
+        if self._req.plotType == 'raw':
+            plt.title('Raw data from detectors2', figure=fig)
+        elif self._req.plotType == 'cumulative':
+            plt.title('Cumulative data', figure=fig, linespacing=2.5)
+        plt.figlegend( lines, map(lambda x: 'Rat #%d' % x, self._req.ratlist) , 'center right')
+
+    def _saveData(self, fig):
+        print 'Generating figure..'
+        if self._tpd == 'csv':
+            pass
+        elif self._tpd == 'png':
+            fn = self.getImage(absolute=True)
+            fig.savefig(fn,format='png') 
+        elif self._tpd == 'pdf':
+            pass
+    
+    
+    
+    
