@@ -10,4 +10,5 @@
         <rat id="6"  datestart="1437980400" />
         <rat id="7"  datestart="1437980400" />
     </rats>
+    <timesettings daystart="09:00" morning="09:00" evening="21:00" />
 </experiment>
