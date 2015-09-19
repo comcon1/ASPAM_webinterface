@@ -1,0 +1,47 @@
+
+*** SERVER & LIBDAQ CONFIGURATION HELP ***
+
+Three configuration files should be generated and edited to make the program work properly:
+
+  -) server.conf (at server home directory)
+  
+  -) parameters.conf (at server home directory)
+
+  -) current.mplstyle (at dqpackage.libDQimage directory)
+
+1. SERVER.CONF
+
+  All configuration of SERVER.CONF can be copied from SERVER.CONF.EXAMPLE file. Note that 
+<tools.staticdir.dir> parameter commonly should be equal to <root.workingDir> of PARAMETERS.CONF.
+If <tools.auth_digest.on> is set to *True* then htdigest file should be create in the same directory.
+The following strings should be inserted into htdigest:
+
+username:realm:HA1_hash_string
+
+  The *realm* string should be equal to <tools.auth_digest.realm> parameter. *HA1_hash_string* can be 
+calculated as MD5 digest of the following string "username:realm:password".
+
+  Modify <server.*> parameters as it is pointed in the documentation of CherryPy 3.8.x and higher to 
+adopt WSGI server behavior.
+
+2. PARAMETERS.CONF
+  All configuration of PARAMETERS.CONF can be copied from PARAMETERS.CONF.EXAMPLE file. The main parameters
+are explained below:
+
+
+ root.turnsonmeters   - coefficient of converting wheel turns into meters (the length of wheel circle)
+
+ curves.r<N>.color    - color of rat no. N (as it display at experiment review panel)
+
+ download.legendwidth - width of the legend on downloaded images (in inches)
+
+ default.experiment.daystart
+                    morning
+                    evening - parameters of understanding daynight and daylight time periods. Daystart is time
+that corresponds to the start of the whole day. morning - is the time of daylight period starts, evening - time 
+of daynight period starts. All parameters are in HH:MM format.
+
+3. CURRENT.MPLSTYLE
+
+  This is matplotlib style file that can be modified according to your wishes.
+

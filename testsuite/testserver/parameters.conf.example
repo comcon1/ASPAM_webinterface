@@ -1,3 +1,6 @@
+root.turnstometers = 0.34
+root.workingDir = '/home/comcon1/.libdaq'
+
 curves.r0.color = #000000
 curves.r1.color = #ff0000
 curves.r2.color = #00ff00
@@ -14,8 +17,6 @@ curves.r12.color = #009999
 curves.r13.color = #999999
 curves.r14.color = #9900ff
 
-root.turnstometers = 0.34
-
 download.legendwidth = 1.5
 
 default.experiment.daystart = 9:00
@@ -26,4 +27,3 @@ daynight.day.bar.facecolor = #0000ff
 daynight.light.bar.facecolor = #ff0000
 daynight.night.bar.facecolor = #772200
 
-root.workingDir = '/home/comcon1/.libdaq'

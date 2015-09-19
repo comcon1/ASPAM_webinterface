@@ -1,0 +1,26 @@
+[global]
+server.socket_host = "127.0.0.1"
+server.socket_port = 8080
+server.thread_pool = 10
+
+[/]
+tools.staticdir.root = "/home/comcon1/k.instuments/daqsoft/server/static"
+tools.auth_digest.on = True
+tools.auth_digest.realm = "Restricted access to the instrument control area"
+tools.auth_digest.key = "ja93r2rhzzsfj824"
+
+[/css]
+tools.staticdir.on = True
+tools.staticdir.dir = "css"
+
+[/js]
+tools.staticdir.on = True
+tools.staticdir.dir = "js"
+
+[/pic]
+tools.staticdir.on = True
+tools.staticdir.dir = "pic"
+
+[/plotdata]
+tools.staticdir.on = True
+tools.staticdir.dir = "/home/comcon1/.libdaq/"
