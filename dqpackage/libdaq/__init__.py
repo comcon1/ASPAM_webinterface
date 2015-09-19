@@ -7,7 +7,8 @@ libDAQ - [u.c.]
 '''
 
 __all__ = ['libdaq']
-_workingDir = '/home/comcon1/.libdaq/'
+from .. import params
+_workingDir = params.workingDir
 
 import core
 import os.path, md5

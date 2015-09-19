@@ -8,7 +8,9 @@ libDQimage - [u.c.]
 '''
 
 __all__ = ['libDQimage']
-_workingDir = '/home/comcon1/.libdaq/'
+from .. import params
+
+_workingDir = params.workingDir
 
 import os.path,sys, md5
 
