@@ -26,7 +26,8 @@ import matplotlib as mpl
 mpl.rcParams['backend'] = 'agg'
 mpl.interactive(False)
 import matplotlib.pyplot as plt
-plt.style.use(os.path.join(os.path.dirname(__file__),'./current.mplstyle'))
+import matplotlib.style as mpl_style
+mpl_style.use(os.path.join(os.path.dirname(__file__),'./current.mplstyle'))
 
 import numpy as np
 import time
