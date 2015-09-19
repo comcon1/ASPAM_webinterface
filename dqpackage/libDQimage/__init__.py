@@ -10,7 +10,7 @@ libDQimage - [u.c.]
 __all__ = ['libDQimage']
 from .. import params
 
-_workingDir = params.workingDir
+_workingDir = params.root.workingDir
 
 import os.path,sys, md5
 

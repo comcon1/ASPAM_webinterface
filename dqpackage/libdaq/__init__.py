@@ -8,7 +8,7 @@ libDAQ - [u.c.]
 
 __all__ = ['libdaq']
 from .. import params
-_workingDir = params.workingDir
+_workingDir = params.root.workingDir
 
 import core
 import os.path, md5
