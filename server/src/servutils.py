@@ -37,6 +37,12 @@ class Page(object):
     def __init__(self, fname):
         self._tmpl = XMLTemplate(fname)
         self._edir = os.path.join(DQSROOTDIR, 'expdata')
+        
+    def errorPage(self, e):
+        self._tmpl = XMLTemplate('../templates/errorPage.xml')
+        self._tmpl.sub('type', str(type(e)).split("'")[1])
+        self._tmpl.sub('message', str(e) )
+        return self._tmpl.string
 
 class Experiment(object):
     '''
