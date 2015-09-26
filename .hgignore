@@ -3,3 +3,5 @@
 /server/src/cherrypy$
 /testsuite/patterns/test\.\.*$
 /daqsoft\.*$
+/\.spyder.*$
+/testsuite/testserver/.*\.conf$
