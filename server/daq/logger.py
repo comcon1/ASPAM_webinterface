@@ -140,8 +140,8 @@ while True:
 
   vals_prev = vals
 
-  out.write("%.0f" % (time.time() - tstart))
-  out.write(reduce(lambda a, b: a + b, map(lambda v: " %d" % v, vals_dif)) + "\n")
+  out.write("%11d" % (time.time() - tstart))
+  out.write(reduce(lambda a, b: a + b, map(lambda v: "%5d" % v, vals_dif)) + "\n")
   out.flush()
 
   tnow = time.time()
