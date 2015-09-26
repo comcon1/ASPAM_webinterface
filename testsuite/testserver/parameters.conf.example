@@ -1,5 +1,5 @@
 root.turnstometers = 0.34
-root.workingDir = '/home/comcon1/.libdaq'
+root.workingDir = /home/comcon1/.libdaq
 
 curves.r0.color = #000000
 curves.r1.color = #ff0000
