@@ -11,6 +11,8 @@ from expreview import ExperimentReview
 root.expreview = ExperimentReview()
 from ratstat import RatStatistics
 root.ratstat = RatStatistics()
+from timestat import TimeStatistics
+root.timestat = TimeStatistics()
 
 print __file__
 

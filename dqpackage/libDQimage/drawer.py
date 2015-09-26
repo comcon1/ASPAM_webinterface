@@ -262,7 +262,7 @@ class RotImageParameters(ImageParameters):
     
     ''' daynightFlag - 000 perbit flag. 1st - day, 2nd - daylight, 3rd - night '''
     
-    _typlst = ['raw', 'cumulative', 'partsum', 'daynight']
+    _typlst = ['raw', 'cumulative', 'partsum', 'daynight', 'timecumulate']
     _pt = 'raw' # default value
     _Yunits = 'meters'
     _dnflag = 7
@@ -358,6 +358,23 @@ class RotImageRequest(ImageRequest):
             dd[:,6] = np.std(night[:,1:], axis=1)
             dd[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1
             self._drawData = dd
+        elif self._req.plotType == 'timecumulate':
+            day,light,night = self._rca.getDayNightData(self._req.tintervals[0], \
+                self._req.tintervals[1], self._req.tintervals[2], self._req.startt, \
+                self._req.stopt)
+            day = day[:,list(set(self._req.ratlist)|{0})]
+            light = light[:,list(set(self._req.ratlist)|{0})]
+            night = night[:,list(set(self._req.ratlist)|{0})]
+            # time, DAY mean, std, LIGHT mean, std, NIGHT mean std
+            #TODO: make correct 1-tailed quantile
+            dd = np.zeros((len(self._req.ratlist),4))
+            dd[:,0] = list(set(self._req.ratlist))
+            dd[:,1] = np.sum(day[:,1:], axis=0)
+            dd[:,2] = np.sum(light[:,1:], axis=0)
+            dd[:,3] = np.sum(night[:,1:], axis=0)
+
+            dd[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1
+            self._drawData = dd        
         else:
             raise AttributeError('Unknown plotType '+self._req.plotType)
         # finally..
@@ -367,8 +384,11 @@ class RotImageRequest(ImageRequest):
         if self._req.plotType in ['cumulative','raw']:
             super(RotImageRequest, self)._init_wo_cache()
             return
-        if self._req.plotType == 'daynight':
+        elif self._req.plotType == 'daynight':
             self._drawDN()
+            return
+        elif self._req.plotType == 'timecumulate':
+            self._drawTC()
             return
     
     def _drawDN(self):
@@ -385,21 +405,76 @@ class RotImageRequest(ImageRequest):
         xs = np.linspace(0, (bitcount+1)*(ndays-1), ndays)
         print xs
         print data
-        shift = 1        
+        zshift = 0.2 # between box and left/right side of the panel
+        shift = zshift
+        boxWidth = 1.0
+        
         if self._req.daynightFlag & 1: # DAY
-            pp = plt.bar(xs + shift, data[:,1], yerr=data[:,2], width=1, color=params.daynight.day.bar.facecolor)
+            pp = plt.bar(xs + shift, data[:,1], yerr=data[:,2], \
+                width=boxWidth, color=params.daynight.day.bar.facecolor)
             pls.append(pp[0])
             shift += 1
         if self._req.daynightFlag & 2: # LIGHT
-            pp = plt.bar(xs + shift, data[:,3], yerr=data[:,4], width=1, color=params.daynight.light.bar.facecolor)
+            pp = plt.bar(xs + shift, data[:,3], yerr=data[:,4], \
+                width=boxWidth, color=params.daynight.light.bar.facecolor)
             pls.append(pp[0])
             shift += 1
         if self._req.daynightFlag & 4: # NIGHT
-            pp = plt.bar(xs + shift, data[:,5], yerr=data[:,6], width=1, color=params.daynight.night.bar.facecolor)
+            pp = plt.bar(xs + shift, data[:,5], yerr=data[:,6], \
+                width=boxWidth, color=params.daynight.night.bar.facecolor)
             pls.append(pp[0])
+        
+        ax.set_xlim(0,xs[-1]+shift+boxWidth+zshift)
+        ax.set_xticks(xs + (shift+zshift)/2. + boxWidth/2.)
+        fmt = '%d.%m'
+        jtbl = [ time.strftime(fmt, time.gmtime(int(ii))) for ii in data[:,0] ]
+        ax.set_xticklabels(jtbl)
         # saving
         self._after_drawing(f,pls)
         self._saveData(f)
+    
+    def _drawTC(self):
+        data = self.drawData
+        # drawing
+        f = plt.figure(figsize=self._req.figsize)
+        self._before_drawing(f)
+        ax = plt.axes()
+        pls = [] # bar patches
+        bitcount = 1 if self._req.daynightFlag in [1,2,4] else \
+                    2 if self._req.daynightFlag in [3,5,6] else \
+                     3
+        nrats = data.shape[0]
+        xs = np.linspace(0, (bitcount+1)*(nrats-1), nrats)
+        print xs
+        print data
+        zshift = 0.2 # between box and left/right side of the panel
+        shift = zshift
+        boxWidth = 1.0
+        
+        if self._req.daynightFlag & 1: # DAY
+            pp = plt.bar(xs + shift, data[:,1], \
+                width=boxWidth, color=params.daynight.day.bar.facecolor)
+            pls.append(pp[0])
+            shift += 1
+        if self._req.daynightFlag & 2: # LIGHT
+            pp = plt.bar(xs + shift, data[:,2], \
+                width=boxWidth, color=params.daynight.light.bar.facecolor)
+            pls.append(pp[0])
+            shift += 1
+        if self._req.daynightFlag & 4: # NIGHT
+            pp = plt.bar(xs + shift, data[:,3], \
+                width=boxWidth, color=params.daynight.night.bar.facecolor)
+            pls.append(pp[0])
+        
+        ax.set_xlim(0,xs[-1]+shift+boxWidth+zshift)
+        ax.set_xticks(xs + (shift+zshift)/2. + boxWidth/2.)
+        fmt = '%d'
+        jtbl = [ fmt % (ii) for ii in data[:,0] ]
+        ax.set_xticklabels(jtbl)
+        # saving
+        self._after_drawing(f,pls)
+        self._saveData(f)
+
 
 class RotImageDownload(RotImageRequest):
     

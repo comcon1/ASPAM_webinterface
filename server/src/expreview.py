@@ -28,9 +28,12 @@ class ExperimentReview(Page):
                 self._selected_rats[i] = True
         else:
             self._selected_rats = dict.fromkeys(range(1, self._ex.nrats+1), True)
-        
-        rca = dq.RotCurveAnalyzer(os.path.join(self._ex._dir,'data00.xvg'))
-        ip0 = qi.RotImageParameters(rca.loader)    
+        try:
+            rca = dq.RotCurveAnalyzer(os.path.join(self._ex._dir,'data00.xvg'))
+            ip0 = qi.RotImageParameters(rca.loader)    
+        except Exception as e:
+            return self.errorPage(e)
+            
         
         self._fromdate = dq.tu.lower_day(ip0.bt) if fromdate == None else int(fromdate)
         self._tilldate = dq.tu.lower_day(ip0.et) if tilldate == None else int(tilldate)
