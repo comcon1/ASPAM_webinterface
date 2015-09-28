@@ -15,6 +15,13 @@
 </head>
 <body>
 <h1>##prog_name## ##prog_version##</h1>
+<ul class="navi">
+ <li class="on"><a href="#">Index</a></li>
+ <li><a>Experiment review</a></li>
+ <li><a>Time cumulated statistics</a></li>
+ <li><a>Rat averaged statistics</a></li>
+ <li class="clear">&nbsp;</li>
+</ul>
 <hr>
 <h2>Available experiments</h2>
 <ol>

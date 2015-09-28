@@ -19,6 +19,13 @@
 </head>
 <body>
 <h1>##expcode##</h1>
+<ul class="navi">
+ <li><a href="/index">Index</a></li>
+ <li><a href="/expreview?code=##expcode##">Experiment review</a></li>
+ <li class="on"><a href="#">Time cumulated statistics</a></li>
+ <li><a href="/ratstat?code=##expcode##">Rat averaged statistics</a></li>
+ <li class="clear">&nbsp;</li>
+</ul>
 <hr>
 <table>
 <tr>
@@ -67,8 +74,6 @@
 <input type="submit" value="Apply" class="apply" />
 <input type="checkbox" id="force_cache_regen" name="regen_cache" ##regenchecked##/><label for="force_cache_regen">Regenerate cache</label>
 </form>
- <a href="/expreview?code=##expcode##">Experiment review</a>
- <a href="/ratstat?code=##expcode##">Rat averaged statistics</a>
     </td>
 </tr>
 </table>
