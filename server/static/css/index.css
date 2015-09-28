@@ -1,2 +1,10 @@
 body, html { font-face: Arial; font-size: 8pt; }
 .ratcheckbox label:after { display:block; content: ''; }
+ul.navi {list-style-type: none; font-size: 18pt;}
+ul.navi li { display: block; margin: 2px auto; float: left;}
+ul.navi li a { display: inline; width: 100pt; 
+    padding: 0 7pt; margin: auto 2px; background-color: blue; 
+    color: white;
+ }
+ul.navi li.clear { float:none; clear: left; height: 0; width: 0; margin: 0;}
+ul.navi li.on a { background-color: red; color: white; text-decoration: none;}
