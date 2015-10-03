@@ -60,6 +60,7 @@ prs.add_argument('-o', dest="out", metavar='FILE', type=str, help='output file',
 prs.add_argument('-f', dest="dev", metavar='/dev/ttyX', type=str, help='device file')
 prs.add_argument('-d', dest="daemon",  action="store_true", help='daemonize')
 prs.add_argument('-l', dest="log", metavar='FILE', type=str, help='log file',default='logger.log')
+prs.add_argument('-i', dest="imitate", action="store_true", help='start imitational version')
 args = prs.parse_args()
 
 def bye(sig,fr):
@@ -94,57 +95,95 @@ lck = open(args.lockf, 'w')
 lck.write(str(os.getpid()))
 lck.close()
 out = open(args.out, 'w')
-#dev = args.dev if args.dev else dev_find()
-sr = connect(args.dev, ntry=1)
-#while len(sr.read(1))>0: pass
-#sr = FakeSerial()
 
+if args.imitate:
+    # imitational behavior of the DAEMON
+    pass
+    # uses device string as filename
+    import os.path
+    if not os.path.isfile(args.dev):
+        sys.stderr.write('Cannot open file %s for imitation!' % (args.dev))
+        sys.exit(1)
+    
+    imitf = open(args.dev, 'r')
+    file_line = '# oo'
+    while file_line[0] == '#':
+        file_line = imitf.readline()
+    oridata = imitf.tell() - len(file_line) # the position BEFORE first data string
+    imitf.seek(oridata)
+    nchan = len(file_line.strip().split())
+    tstart=time.time()
 
-
-nchan = 0
-tstart=time.time()
-print("%s Logger started"%timestamp())
-out.write("# LOGGER started @ %s\n#\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
-while True:
-  try:
-    sr.flushInput()
-    sr.write("cnt\n")
-    s = sr.readline()
-  except (serial.serialutil.SerialException, serial.termios.error) as err:
-    print("%s Error communicating to device: %s"%(timestamp(),str(err)))
-    sr.close()
-    time.sleep(1)
-#      sys.stdout.flush()
-    sr = connect() #serial.Serial(port=dev_find(), timeout=0.5)
-#    while len(sr.read(1))>0: pass
-    print("%s Reconnected to device"%timestamp())
-
-  try:
-    vals = map(int, s.split())
-    if nchan > 0 and len(vals) != nchan:
-      raise NameError
-  except:
-    print("%s Corrupted reply string '%s'"%(timestamp(),s))
-    continue
-
-  if nchan == 0:
-    nchan = len(vals)
-    vals_prev = vals
-    print("%s Number of channels: %d" % (timestamp(), nchan))
-    out.write("# Number of channels: %d\n" % nchan)
-    out.write(reduce(lambda a, b: a + b, map(lambda i: " channel-%d" % i, range(nchan)), "# time(sec)") + "\n#\n")
-
-  vals_dif = []
-  for i in xrange(nchan):
-    vals_dif.append(vals[i] - vals_prev[i])
-
-  vals_prev = vals
-
-  out.write("%11d" % (time.time() - tstart))
-  out.write(reduce(lambda a, b: a + b, map(lambda v: "%5d" % v, vals_dif)) + "\n")
-  out.flush()
-
-  tnow = time.time()
-  icycle = int((tnow - tstart) / args.period)
-  tnext = tstart + (icycle + 1) * args.period
-  time.sleep(tnext - tnow)
+    print("%s Logger started"%timestamp())
+    out.write("# LOGGER started @ %s\n#\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
+    
+    while True:
+        
+        file_line = imitf.readline().strip()
+        vals_dif = map(int,file_line.split()[1:])
+        
+        out.write("%11d" % time.time() )
+        out.write(''.join(map(lambda v: "%5d" % v, vals_dif)) + "\n")
+        out.flush()
+        
+        tnow = time.time()
+        icycle = int((tnow - tstart) / args.period)
+        tnext = tstart + (icycle + 1) * args.period
+        time.sleep(tnext - tnow)
+        if imitf.tell() == os.fstat(imitf.fileno()).st_size:
+            print 'Logger reads imitation file from the very beggining!'
+            imitf.seek(oridata)
+else:
+    # normal execution of the DAEMON
+    # dev = args.dev if args.dev else dev_find()
+    sr = connect(args.dev, ntry=1)
+    # while len(sr.read(1))>0: pass
+    # sr = FakeSerial()
+    
+    nchan = 0
+    tstart=time.time()
+    print("%s Logger started"%timestamp())
+    out.write("# LOGGER started @ %s\n#\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
+    while True:
+      try:
+        sr.flushInput()
+        sr.write("cnt\n")
+        s = sr.readline()
+      except (serial.serialutil.SerialException, serial.termios.error) as err:
+        print("%s Error communicating to device: %s" % (timestamp(),str(err)))
+        sr.close()
+        time.sleep(1)
+        # sys.stdout.flush()
+        sr = connect() #serial.Serial(port=dev_find(), timeout=0.5)
+        # while len(sr.read(1))>0: pass
+        print("%s Reconnected to device" % timestamp())
+    
+      try:
+        vals = map(int, s.split())
+        if nchan > 0 and len(vals) != nchan:
+          raise NameError
+      except:
+        print("%s Corrupted reply string '%s'" % (timestamp(),s))
+        continue
+    
+      if nchan == 0:
+        nchan = len(vals)
+        vals_prev = vals
+        print("%s Number of channels: %d" % (timestamp(), nchan))
+        out.write("# Number of channels: %d\n" % nchan)
+        out.write('# timestamp '+''.join(map(lambda i: " channel-%d" % i, range(nchan))) + "\n#\n")
+    
+      vals_dif = []
+      for i in xrange(nchan):
+        vals_dif.append(vals[i] - vals_prev[i])
+    
+      vals_prev = vals
+    
+      out.write("%11d" % time.time())
+      out.write(''.join(map(lambda v: "%5d" % v, vals_dif)) + "\n")
+      out.flush()
+    
+      tnow = time.time()
+      icycle = int((tnow - tstart) / args.period)
+      tnext = tstart + (icycle + 1) * args.period
+      time.sleep(tnext - tnow)
