@@ -1,0 +1,48 @@
+<?xml version='1.0'?>
+<!-- TODO: DOCTYPE page SYSTEM "page.dtd" -->
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/css/index.css">
+
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Cache-Control" content="no-cache" />
+<meta http-equiv="Pragma-directive" content="no-cache" />
+<meta http-equiv="Cache-Directive" content="no-cache" />
+<meta http-equiv="Expires" content="##expires_date##" />
+
+<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+<title>Edit experiment</title>
+</head>
+<body>
+<h1>##prog_name## ##prog_version##</h1>
+<ul class="navi">
+ <li><a href="/index">Index</a></li>
+ <li class="on"><a>Edit experiment</a></li>
+ <li class="clear">&nbsp;</li>
+</ul>
+<hr>
+<h2>Creating new experiment</h2>
+<form action="/action" type="POST">
+<input type="hidden" action="create_experiment">
+<div>
+ <input name="code" type="text">##code##</input>
+ <input name="name" type="text">##comment##</input>
+</div>
+<div>
+ <input name="nrats" type="text">##nrats##</input>
+</div>
+<div>
+ <input type="text" name="daystart" size="5" value="##daystart##" />&nbsp;
+ <input type="text" name="morning" size="5" value="##morning##" />&nbsp;
+ <input type="text" name="evening" size="5" value="##evening##" />
+</div>
+<div>
+ <input type="submit" value="Apply">&nbsp;
+ <input type="reset" value="Reset data">
+</div>
+</form>
+
+
+</body>
+</html>

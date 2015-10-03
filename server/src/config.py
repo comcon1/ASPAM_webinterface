@@ -14,6 +14,7 @@ DQSPRGNAME = 'Rat Wheel Analyzer'
 DQSVERSION = '0.1'
 DQSROOTDIR = os.path.join(os.path.dirname(__file__), \
     '../../testsuite/testserver/')
+DQSERVROOT = os.path.join(os.path.dirname(__file__), '..', 'daq')
 
 from iniparse.config import BasicConfig
 

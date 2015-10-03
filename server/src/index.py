@@ -34,7 +34,8 @@ class ExperimentsBlock(Page):
 
 class IndexPage(Page):
 
-    def __init__(self):
+    def __init__(self, contrl):
+        self._dqc = contrl
         super(IndexPage, self).__init__('../templates/index.xml')
 
     def index(self):

@@ -5,8 +5,12 @@ import cherrypy.lib.auth_digest
 import os.path
 from config import *
 
+from dqcontrol import DQController
+
+dqc = DQController()
+
 from index import IndexPage
-root = IndexPage()
+root = IndexPage(dqc)
 from expreview import ExperimentReview
 root.expreview = ExperimentReview()
 from ratstat import RatStatistics
