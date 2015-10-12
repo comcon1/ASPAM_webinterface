@@ -33,16 +33,22 @@ class XMLTemplate(object):
         raise NotImplementedError('allKeys not implemented!')
 
 class Page(object):
-    
+    ''' Root abstract class for every HTML page. '''
+     
     def __init__(self, fname):
-        self._tmpl = XMLTemplate(fname)
-        self._edir = os.path.join(DQSROOTDIR, 'expdata')
+        if fname == None:
+            #TODO: implement DO_NOT_LOAD_PAGE_CLASS_ITSELF
+            pass
+        else:
+            self._tmpl = XMLTemplate(fname)
+            self._edir = os.path.join(DQSROOTDIR, 'expdata')
         
     def errorPage(self, e):
         self._tmpl = XMLTemplate('../templates/errorPage.xml')
         self._tmpl.sub('type', str(type(e)).split("'")[1])
         self._tmpl.sub('message', str(e) )
         return self._tmpl.string
+        
 
 def mkCheckBox(dic, name, id=None, cls=None):
     #TODO: implement class *cls*

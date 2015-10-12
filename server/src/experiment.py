@@ -2,6 +2,7 @@
 
 from config import *
 import libxml2 as lx
+import time
 from servutils import Page
 
 class Experiment(object):
@@ -25,6 +26,7 @@ class Experiment(object):
         '''Constructor is initialized with a directory wich contains data and 
         settings file called 'daq.xml'. If *new* is true - new experiment with a
         standard parameters is created.'''
+        self._code = code
         self._dir = os.path.join(DQSROOTDIR, 'expdata', code)
         if new:
             self._daystart = kwargs['daystart'] if kwargs.has_key('daystart') \
@@ -33,6 +35,8 @@ class Experiment(object):
                 else params.default.experiment.morning
             self._evening = kwargs['evening'] if kwargs.has_key('evening') \
                 else params.default.experiment.evening
+            self._nrats = int(kwargs['nrats'])
+            self._comment = str(kwargs['comment'])
             self._create()
         else:
             self._load()
@@ -42,6 +46,7 @@ class Experiment(object):
         ch = xx.xpathEval('/experiment')[0]
         self._nrats = int(ch.hasProp('nrats').content)
         self._datestart = int(ch.hasProp('datestart').content)
+        self._state = int(ch.hasProp('run').content)
         ch = xx.xpathEval('/experiment/comment')[0]
         self._comment = ch.content
         # *************
@@ -62,7 +67,7 @@ class Experiment(object):
         ch.setProp('datestart', str(int(time.time())))
         ch = xx.xpathEval('/experiment/rats')[0]
         for i in range(2,self.nrats+1):
-            el = ch.newChild(None, rat, None)
+            el = ch.newChild(None, 'rat', None)
             el.setProp('id', str(i))
             el.setProp('datestart', str(int(time.time())))
         
@@ -70,10 +75,19 @@ class Experiment(object):
         ch.setProp('daystart', self.daystart)
         ch.setProp('morning', self.morning)
         ch.setProp('evening', self.evening)
-        # write to file at last        
-        f = open(os.path.join(self._dir, 'daq.xml'), 'w')
-        f.write(str(xx))
-        f.close()
+        # write to file at last
+        os.mkdir(self._dir)
+        try:
+            # safe mechanizm for blocking directory creation
+            f = open(os.path.join(self._dir, 'daq.xml'), 'w')
+            f.write(str(xx))
+            f.close()
+        except Exception as e:
+            os.rm(self._dir)
+            raise e
+        
+    def finish(self):
+        raise NotImplemented('Yet..')
         
     
     @property 
@@ -99,14 +113,27 @@ class Experiment(object):
     @property 
     def evening(self):
         return self._evening
+        
+    @property
+    def state(self):
+        return self._state
+    
+    @property
+    def code(self):
+        return self._code
+    
+    STATE_TO_STR = {0: 'STOPPED', 1: 'PAUSED', 2: 'ACTIVE'}
 
 class NewExperimentPage(Page):
     
     def __init__(self):
         super(NewExperimentPage, self).__init__('../templates/one_experiment.xml')
     
-    def index(self):
+    def index(self):      
         self._tmpl.reset()
+        self._tmpl.sub('prog_name', DQSPRGNAME)
+        self._tmpl.sub('prog_version', DQSVERSION)
+        
         self._tmpl.sub('code', 'enter code')
         self._tmpl.sub('comment', 'enter experiment name')
         self._tmpl.sub('daystart', params.default.experiment.daystart)
@@ -117,8 +144,38 @@ class NewExperimentPage(Page):
     
     index.exposed = True
         
+'''
+Actor functions provide interface for Actor Factory. Actor Factory register actor 
+function as a listerner and run it when corresponding request occurs.
+
+see action.py for details
+'''
+
+
+def actor_create_experiment(**kwargs):
+    x = Experiment(kwargs['code'], new=True, nrats=kwargs['nrats'], \
+        daystart=kwargs['daystart'], comment=kwargs['comment'], \
+        morning=kwargs['morning'], evening=kwargs['evening'])
+
+def actor_changestate_experiment(dqc, **kwargs):
+    x = Experiment(kwargs['code'])
+    newstate = int(kwargs['newstate'])
+    if (x.state == newstate):
+        raise Exception('Nothing to do!')
+    if (x.state == 0):
+        raise Exception('It is not allowed to manipulate finished experiments!')
+    if (x.state == 1):
+        if (newstate == 2):
+            # running logger
+            dqc.set_experiment(x.code)
+            dqc.start_logger()
+        elif (newstate == 0):
+            x.finish()
+            dqc.set_experiment(None)
+    if (x.state == 2):
+        if (newstate == 1):
+            dqc.stop_logger()
+            # pausing logger
+        elif (newstate == 0):
+            raise Exception('If you are sure to finish the experiment then pause it before!')
         
-
-
-def actor_create_experiment(code, nrats, comment, daystart=None, morning=None, evening=None):
-    x = Experiment(code, new=True, nrats, daystart, comment, morning, evening)

@@ -6,7 +6,8 @@ Created on Wed Aug  5 21:40:18 2015
 """
 
 from config import *
-from servutils import Page, Experiment
+from servutils import Page, mkGetRequest
+from experiment import Experiment
 
 class ExperimentsBlock(Page):
     
@@ -26,10 +27,14 @@ class ExperimentsBlock(Page):
         # substituting
         self._tmpl.reset()
         self._tmpl.sub('nrats', ex.nrats)
+        self._tmpl.sub('state_string', ex.STATE_TO_STR[ex.state])
         self._tmpl.sub('datestart', ex.datestr)
         self._tmpl.sub('name', exp)
         self._tmpl.sub('comment', ex.comment)
         self._tmpl.sub('uri', '/expreview?code='+exp)
+        self._tmpl.sub('STOP_LINK', '/action'+mkGetRequest(action='chstate_experiment', after_action='/index', code=exp, newstate=0))
+        self._tmpl.sub('PAUSE_LINK', '/action'+mkGetRequest(action='chstate_experiment', after_action='/index', code=exp, newstate=1))
+        self._tmpl.sub('START_LINK', '/action'+mkGetRequest(action='chstate_experiment', after_action='/index', code=exp, newstate=2))
         return self._tmpl.string
 
 class IndexPage(Page):
@@ -39,11 +44,14 @@ class IndexPage(Page):
         super(IndexPage, self).__init__('../templates/index.xml')
 
     def index(self):
+        self._tmpl.reset()
         self._tmpl.sub('prog_name', DQSPRGNAME)
         self._tmpl.sub('prog_version', DQSVERSION)
         
         exprs = ExperimentsBlock()
         self._tmpl.sub( 'experiments_list', exprs.getList() )
+        
+        self._tmpl.sub( 'new_exp_ref', '/control/newexperiment' )
         
         return self._tmpl.string
         

@@ -32,7 +32,7 @@
 <div class="cpanel">
     <div>
         <b>Current experiment:</b> <span>##current_experiment##</span>
-        <b>Create new experiment:</b> <a href="#">press for create</a>
+        <b>Create new experiment:</b> <a href="##new_exp_ref##">press for create</a>
     </div>
     <div>
         <b>Manipulate:</b> <a href="#">Start</a> <a href="#">Stop</a> <a href="#">Pause</a>

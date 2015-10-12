@@ -23,14 +23,15 @@
 </ul>
 <hr>
 <h2>Creating new experiment</h2>
-<form action="/action" type="POST">
-<input type="hidden" action="create_experiment">
+<form action="/action" method="GET">
+<input type="hidden" name="action" value="create_experiment">
+<input type="hidden" name="after_action" value="/">
 <div>
- <input name="code" type="text">##code##</input>
- <input name="name" type="text">##comment##</input>
+ <input name="code" type="text" value="##code##" />
+ <input name="comment" type="text" value="##comment##" />
 </div>
 <div>
- <input name="nrats" type="text">##nrats##</input>
+ <input name="nrats" type="text" value="##nrats##" />
 </div>
 <div>
  <input type="text" name="daystart" size="5" value="##daystart##" />&nbsp;

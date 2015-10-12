@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<experiment nrats="1" datestart="0" run="0">
+<experiment nrats="1" datestart="0" run="1">
     <comment>zero</comment>
     <rats>
         <rat id="1" datestart="0"/>

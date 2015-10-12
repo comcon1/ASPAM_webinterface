@@ -1,4 +1,5 @@
 <li>
-    <a href="##uri##">##name##</a>: ##nrats## rats, (##datestart##)
-    <div>##comment##</div>
+    <a href="##uri##">##name##</a>: ##nrats## rats, (##datestart## | ##state_string##)
+    <div>##comment##</div> 
+    <div> <a href="##STOP_LINK##">STOP</a> | <a href="##START_LINK##">START</a> | <a href="##PAUSE_LINK##">PAUSE</a>  </div>
 </li>

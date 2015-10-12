@@ -18,9 +18,15 @@
 <h1>Server have processed your action!</h1>
 <hr>
 <div style="font-size: 18pt;">
+<p>
 <b>Action:</b> <i>##action##</i>
+</p>
+<p>
 <b>Response:</b> <i>##response##</i>
+</p>
+<p>
 <b>Wait until you are redirected or press <a href="##redirect##">THIS LINK</a>!</b><br>
+</p>
 </div>
 </body>
 </html>
