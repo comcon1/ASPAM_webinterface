@@ -149,7 +149,8 @@ else:
     nchan = 0
     tstart=time.time()
     print("%s Logger started"%timestamp())
-    out.write("# LOGGER started @ %s\n#\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
+    if not is_continue: 
+        out.write("# LOGGER started @ %s\n#\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
     while True:
       try:
         sr.flushInput()
