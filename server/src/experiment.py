@@ -55,6 +55,16 @@ class Experiment(object):
         self._morning = str(ch.hasProp('morning').content)
         self._evening = str(ch.hasProp('evening').content)
         assert( self.daystart)
+    
+    def _save(self):
+        xx = lx.parseFile(os.path.join(self._dir, 'daq.xml'))
+        ch = xx.xpathEval('/experiment')[0]
+        ch.setProp('run', str(self.state) )
+
+        f = open(os.path.join(self._dir, 'daq.xml'), 'w')
+        f.write(str(xx))
+        f.close()
+        
 
     def _create(self):
         xx = lx.parseFile(os.path.join('..','templates','emptyExperiment.xml'))
@@ -178,4 +188,6 @@ def actor_changestate_experiment(dqc, **kwargs):
             # pausing logger
         elif (newstate == 0):
             raise Exception('If you are sure to finish the experiment then pause it before!')
+    x._state = newstate
+    x._save()
         
