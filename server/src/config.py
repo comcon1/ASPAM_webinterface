@@ -15,6 +15,7 @@ DQSVERSION = '0.1'
 DQSROOTDIR = os.path.join(os.path.dirname(__file__), \
     '../../testsuite/testserver/')
 DQSERVROOT = os.path.join(os.path.dirname(__file__), '..', 'daq')
+DQEXPDATADIR = os.path.join(DQSROOTDIR, 'expdata')
 
 from iniparse.config import BasicConfig
 

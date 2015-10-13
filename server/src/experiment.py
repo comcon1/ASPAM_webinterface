@@ -27,7 +27,7 @@ class Experiment(object):
         settings file called 'daq.xml'. If *new* is true - new experiment with a
         standard parameters is created.'''
         self._code = code
-        self._dir = os.path.join(DQSROOTDIR, 'expdata', code)
+        self._dir = os.path.join(DQEXPDATADIR, code)
         if new:
             self._daystart = kwargs['daystart'] if kwargs.has_key('daystart') \
                 else params.default.experiment.daystart
@@ -177,14 +177,20 @@ def actor_changestate_experiment(dqc, **kwargs):
     if (x.state == 1):
         if (newstate == 2):
             # running logger
+            print '_listener_ Running logger..'
             dqc.set_experiment(x.code)
             dqc.start_logger()
+            x._state = newstate
+            x._save()
         elif (newstate == 0):
-            x.finish()
             dqc.set_experiment(None)
+            x._state = newstate
+            x._save()
     if (x.state == 2):
         if (newstate == 1):
             dqc.stop_logger()
+            x._state = newstate
+            x._save()
             # pausing logger
         elif (newstate == 0):
             raise Exception('If you are sure to finish the experiment then pause it before!')

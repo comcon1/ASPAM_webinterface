@@ -22,9 +22,9 @@ class DQController(Thread):
     def start_logger(self):
         assert(self._expcode != None)
         lgr = os.path.join(DQSERVROOT, 'logger.py')
-        expdir = os.path.join(DQSROOTDIR, self._expcode)
+        expdir = os.path.join(DQEXPDATADIR, self._expcode)
         assert(os.path.isdir(expdir))
-        args = [lgr, '-d', '-p', os.path.join(expdir, 'logger.pid'), \
+        args = [lgr, '-p', os.path.join(expdir, 'logger.pid'), \
             '-o', os.path.join(expdir, 'data00.xvg'), '-l', \
             os.path.join(expdir, 'logger.log')]
         if True:
@@ -34,22 +34,25 @@ class DQController(Thread):
         # pointing DEVICE is optional!
         self._daemon = subprocess.Popen(args, \
             shell=False)
+            
     
     def stop_logger(self):
-        print 'Stopping logger for %s!' % (self._expcode)
         if (self._daemon == None):
             # nothing to do
             return
-        self._daemon.terminate()
+        print 'Stopping logger for %s: %d!' % (self._expcode, self._daemon.pid)
+        os.kill(self._daemon.pid, signal.SIGTERM )
         self._daemon.wait()
         self._daemon = None
+        print 'Logger was stoped!'
     
     def set_experiment(self, expcode):
         if self._daemon != None:
             raise AttributeError('Can not change experiment while logger is run!')
         if expcode != None:
-            expdir = os.path.join(DQSROOTDIR, expcode)
-            assert(os.path.isdir(expdir))
+            expdir = os.path.join(DQEXPDATADIR, expcode)
+            if not os.path.isdir(expdir):
+                raise OSError, 'directory '+expdir+' not found.'
         self._expcode = expcode
         
     
