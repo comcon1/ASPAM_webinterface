@@ -1,0 +1,45 @@
+2015-10-17_13:19:54 Logger started
+2015-10-17_13:22:45 Logger stopped
+2015-10-17_13:23:07 Logger started
+2015-10-17_13:24:25 Logger stopped
+2015-10-17_13:24:32 Logger started
+2015-10-17_13:25:53 Logger stopped
+Traceback (most recent call last):
+  File "/home/comcon1/k.instuments/daqsoft/server/src/../daq/logger.py", line 138, in <module>
+    time.sleep(tnext - tnow)
+  File "/home/comcon1/k.instuments/daqsoft/server/src/../daq/logger.py", line 69, in bye
+    os.unlink(args.lockf)
+OSError: [Errno 2] No such file or directory: '/home/comcon1/k.instuments/daqsoft/server/src/../../testsuite/testserver/expdata/kido/logger.pid'
+2015-10-17_13:27:05 Logger started
+2015-10-17_13:28:04 Logger stopped
+Traceback (most recent call last):
+  File "/home/comcon1/k.instuments/daqsoft/server/src/../daq/logger.py", line 138, in <module>
+    time.sleep(tnext - tnow)
+  File "/home/comcon1/k.instuments/daqsoft/server/src/../daq/logger.py", line 69, in bye
+    os.unlink(args.lockf)
+OSError: [Errno 2] No such file or directory: '/home/comcon1/k.instuments/daqsoft/server/src/../../testsuite/testserver/expdata/kido/logger.pid'
+2015-10-17_13:28:27 Logger started
+2015-10-17_13:34:28 Logger stopped
+Traceback (most recent call last):
+  File "/home/comcon1/k.instuments/daqsoft/server/src/../daq/logger.py", line 138, in <module>
+    time.sleep(tnext - tnow)
+  File "/home/comcon1/k.instuments/daqsoft/server/src/../daq/logger.py", line 69, in bye
+    os.unlink(args.lockf)
+OSError: [Errno 2] No such file or directory: '/home/comcon1/k.instuments/daqsoft/server/src/../../testsuite/testserver/expdata/kido/logger.pid'
+2015-10-17_13:34:39 Logger started
+2015-10-17_13:36:02 Logger stopped
+Traceback (most recent call last):
+  File "/home/comcon1/k.instuments/daqsoft/server/src/../daq/logger.py", line 138, in <module>
+    time.sleep(tnext - tnow)
+  File "/home/comcon1/k.instuments/daqsoft/server/src/../daq/logger.py", line 69, in bye
+    os.unlink(args.lockf)
+OSError: [Errno 2] No such file or directory: '/home/comcon1/k.instuments/daqsoft/server/src/../../testsuite/testserver/expdata/kido/logger.pid'
+2015-10-17_13:36:07 Logger started
+2015-10-17_13:36:17 Logger stopped
+2015-10-17_13:38:27 Logger started
+2015-10-17_13:45:44 Logger stopped
+2015-10-17_14:04:01 Logger started
+2015-10-17_14:04:13 Logger stopped
+2015-10-17_14:30:44 Logger started
+Logger reads imitation file from the very beggining!
+2015-10-17_16:38:54 Logger stopped

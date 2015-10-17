@@ -178,12 +178,18 @@ class ImageRequest(CurrentCachable):
                 fmt = '%d'
             else:
                 AttributeError('Precise code %s is incorrect' % precis)
+            print 'Building day ticks from ts.%d to ts.%d' % (ta[0], ta[-1])
+            print 'First tick: %d' % gm_1day
             t = map(int,list(frange(gm_1day, ta[-1],(3600*24))))
-            if t[-1] > ta[-1]:
-                t.pop()
-                
-            l = [ time.strftime(fmt, time.gmtime(int(ii))) for ii in t ]
-            print t,l
+            if len(t) > 0:
+                if t[-1] > ta[-1]:
+                    t.pop()
+                l = [ time.strftime(fmt, time.gmtime(int(ii))) for ii in t ]
+                print t,l
+            else:
+                # at least one tick :-)
+                t = [ (ta[0]+ta[1]) / 2. ]
+                l = [ time.strftime(fmt, time.gmtime(ta[0]) ) ]
         else:
             raise NotImplementedError('Precis type ``%s'' not implemented' \
                     % precis)
@@ -207,6 +213,7 @@ class ImageRequest(CurrentCachable):
 
     def _init_wo_cache(self):
         data = self.drawData
+        print 'Image will be drawn for data of %dx%d' % data.shape
         mticks, mtlbls = self._genticks(data[:,0], 'h1',)
         jticks, jtlbls = self._genticks(data[:,0], 'dc')
         # drawing

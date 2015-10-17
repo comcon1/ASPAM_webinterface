@@ -1,5 +1,6 @@
 #!/usr/bin/python
 import os, sys, serial, time, argparse, glob, random, signal, ctypes
+import os.path
 dev_pat = "/dev/LOGGER*"
 
 libc = ctypes.cdll.LoadLibrary("libc.so.6")
@@ -65,6 +66,7 @@ args = prs.parse_args()
 
 def bye(sig,fr):
   print("%s Logger stopped"%timestamp())
+  os.unlink(args.lockf)
   sys.exit(0)
 
 
@@ -94,7 +96,10 @@ sys.stderr = open(args.log, 'a+',0)
 lck = open(args.lockf, 'w')
 lck.write(str(os.getpid()))
 lck.close()
-out = open(args.out, 'w')
+
+is_continue = os.path.isfile(args.out) 
+
+out = open(args.out, 'a+')
 
 if args.imitate:
     # imitational behavior of the DAEMON
@@ -115,7 +120,8 @@ if args.imitate:
     tstart=time.time()
 
     print("%s Logger started"%timestamp())
-    out.write("# LOGGER started @ %s\n#\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
+    if not is_continue: 
+        out.write("# LOGGER started @ %s\n#\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
     
     while True:
         
@@ -143,7 +149,8 @@ else:
     nchan = 0
     tstart=time.time()
     print("%s Logger started"%timestamp())
-    out.write("# LOGGER started @ %s\n#\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
+    if not is_continue: 
+        out.write("# LOGGER started @ %s\n#\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
     while True:
       try:
         sr.flushInput()

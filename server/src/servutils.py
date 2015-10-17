@@ -33,74 +33,27 @@ class XMLTemplate(object):
         raise NotImplementedError('allKeys not implemented!')
 
 class Page(object):
-    
+    ''' Root abstract class for every HTML page. '''
+     
     def __init__(self, fname):
-        self._tmpl = XMLTemplate(fname)
-        self._edir = os.path.join(DQSROOTDIR, 'expdata')
+        if fname == None:
+            #TODO: implement DO_NOT_LOAD_PAGE_CLASS_ITSELF
+            pass
+        else:
+            self._tmpl = XMLTemplate(fname)
+            self._edir = os.path.join(DQSROOTDIR, 'expdata')
         
     def errorPage(self, e):
         self._tmpl = XMLTemplate('../templates/errorPage.xml')
         self._tmpl.sub('type', str(type(e)).split("'")[1])
         self._tmpl.sub('message', str(e) )
-        return self._tmpl.string
-
-class Experiment(object):
-    '''
-    Experiment *class* parses data XML and check its correctness.
-
-    
-    ==Properties==
-
-    $datestr$ and $datestart$ - is start of the experiment in string and timestamp formats.
-
-    $nrats$ - number of total channels.
-
-    $comment$ - *string* comment.
-    
-    Timesettings of summation: $daystart$ is a time of day. $morning$ - time 
-    of lightday. $evening$ - start of nightday. Either day or night may consists
-    of two pieces.'''
-    
-    def __init__(self, dirpath):
-        '''Constructor is initialized with a directory wich contains data and 
-        settings file called 'daq.xml'. '''
-        self._dir = dirpath
-        xx = lx.parseFile(os.path.join(self._dir, 'daq.xml'))
-        ch = xx.xpathEval('/experiment')[0]
-        self._nrats = int(ch.hasProp('nrats').content)
-        self._datestart = int(ch.hasProp('datestart').content)
-        ch = xx.xpathEval('/experiment/comment')[0]
-        self._comment = ch.content
-        # *************
-        ch = xx.xpathEval('/experiment/timesettings')[0]
-        self._daystart = str(ch.hasProp('daystart').content)
-        self._morning = str(ch.hasProp('morning').content)
-        self._evening = str(ch.hasProp('evening').content)
-        assert( self.daystart)
-    
-    @property 
-    def datestr(self):
-        return time.strftime('%d.%m.%y %H:%M', \
-            time.localtime(self._datestart) )
-    @property 
-    def daystart(self):
-        return self._daystart
-    
-    @property 
-    def nrats(self):
-        return self._nrats
         
-    @property 
-    def comment(self):
-        return self._comment
-    
-    @property 
-    def morning(self):
-        return self._morning
-    
-    @property 
-    def evening(self):
-        return self._evening
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        self._tmpl.sub('position', '%s:%d' % (fname, exc_tb.tb_lineno) )
+        
+        return self._tmpl.string
+        
 
 def mkCheckBox(dic, name, id=None, cls=None):
     #TODO: implement class *cls*
@@ -133,7 +86,7 @@ def mkComboBox(dic, selected, name, id=None, cls=None, sort_flag=False):
         l.append(s)
     l.append('</select>')
     return '\n'.join(l)
-    
+
 def mkDateCombo(startt, stopt, curt, name, id=None, cls=None):
     zz = np.arange(dq.tu.lower_day(startt), dq.tu.lower_day(stopt)+1, step=24*3600)
     dates = map(lambda x: time.strftime('%d.%m',time.localtime(x)), zz)

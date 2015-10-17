@@ -19,7 +19,8 @@
 <hr>
 <div style="font-size: 18pt;">
 <b>Type:</b> <i>##type##</i><br>
-<b>Message:</b> <i>##message##</i>
+<b>Message:</b> <i>##message##</i><br>
+<b>Position:</b> <i>##position##</i>
 </div>
 </body>
 </html>

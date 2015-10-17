@@ -1,0 +1,32 @@
+<?xml version='1.0'?>
+<!-- TODO: DOCTYPE page SYSTEM "page.dtd" -->
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="/css/index.css">
+
+<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Cache-Control" content="no-cache" />
+<meta http-equiv="Pragma-directive" content="no-cache" />
+<meta http-equiv="Cache-Directive" content="no-cache" />
+<meta http-equiv="Expires" content="##expires_date##" />
+
+<link rel="shortcut icon" href="/images/favicon.ico" type="image/x-icon" />
+</head>
+
+<body>
+<h1>Server have processed your action!</h1>
+<hr>
+<div style="font-size: 18pt;">
+<p>
+<b>Action:</b> <i>##action##</i>
+</p>
+<p>
+<b>Response:</b> <i>##response##</i>
+</p>
+<p>
+<b>Wait until you are redirected or press <a href="##redirect##">THIS LINK</a>!</b><br>
+</p>
+</div>
+</body>
+</html>
