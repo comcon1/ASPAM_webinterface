@@ -30,6 +30,7 @@ actfactory = action.Action()
 actfactory.registerActor('create_experiment', experiment.actor_create_experiment)
 actfactory.registerActor('chstate_experiment', partial(experiment.actor_changestate_experiment, dqc))
 
+
 # binding registered actors
 root.action = actfactory
 
@@ -47,5 +48,6 @@ print get_ha1
 if __name__ == '__main__':
     root_app = cherrypy.tree.mount(root, "/", curconf)
     root_app.config['/']['tools.auth_digest.get_ha1'] = get_ha1
+    cherrypy.engine.subscribe( 'stop', partial(experiment.actor_finish_active_experiment, dqc) )
     cherrypy.engine.start()
     cherrypy.engine.block() 

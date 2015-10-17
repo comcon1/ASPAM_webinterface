@@ -24,7 +24,7 @@ class DQController(Thread):
         lgr = os.path.join(DQSERVROOT, 'logger.py')
         expdir = os.path.join(DQEXPDATADIR, self._expcode)
         assert(os.path.isdir(expdir))
-        args = [lgr, '-p', os.path.join(expdir, 'logger.pid'), \
+        args = [lgr, '-d', '-p', os.path.join(expdir, 'logger.pid'), \
             '-o', os.path.join(expdir, 'data00.xvg'), '-l', \
             os.path.join(expdir, 'logger.log')]
         if True:
@@ -32,17 +32,60 @@ class DQController(Thread):
             args.append('-f')
             args.append(os.path.join(DQSERVROOT,'dfi02.xvg'))
         # pointing DEVICE is optional!
-        self._daemon = subprocess.Popen(args, \
-            shell=False)
-            
+        subprocess.Popen(args, shell=False)
+        while True:
+            try:
+                f = open(os.path.join(expdir, 'logger.pid'))
+                self._daemon =  int(f.readline().strip())
+                f.close()
+            except IOError:
+                time.sleep(0.5)
+                continue
+            break
+
+    def _isrunning(self):
+        if not os.path.isfile("/proc/%s/cmdline"%self._daemon): 
+            print '<a>'
+            return False
+        f=open("/proc/%s/cmdline"%self._daemon,'r')
+        cmd = f.readline().split('\x00')
+        f.close()
+        if len(cmd)<2:
+            print '<b>'
+            return False
+        if not (cmd[0].split('/')[-1]=='python' and cmd[1].split('/')[-1]=='logger.py'):
+            print '<c>'
+            return False
+        return True
     
     def stop_logger(self):
         if (self._daemon == None):
             # nothing to do
             return
-        print 'Stopping logger for %s: %d!' % (self._expcode, self._daemon.pid)
-        os.kill(self._daemon.pid, signal.SIGTERM )
-        self._daemon.wait()
+        pidfile = os.path.join(DQEXPDATADIR, self._expcode, 'logger.pid')
+        print 'Stopping logger for %s: %d!' % (self._expcode, self._daemon)
+        if self._isrunning():
+            os.kill(self._daemon, signal.SIGTERM )
+            counter = 0
+            while True:
+                try:
+                    os.kill(self._daemon, 0)
+                except OSError:
+                    print '[Killing..]'
+                    time.sleep(1)
+                    counter += 1
+                    continue
+                if counter == 5:
+                    os.kill(self._daemon, signal.SIGKILL )
+                    print '[We need to send SIGKILL]'
+                    os.unlink(pidfile)
+                    break
+                break
+        else:
+            print 'Logger died incorrectly!'
+            if os.path.isfile(pidfile):
+                os.unlink(pidfile)            
+
         self._daemon = None
         print 'Logger was stoped!'
     
@@ -69,7 +112,7 @@ class DQController(Thread):
             if self._daemon == None:
                 continue
             try:
-                os.kill(self._daemon.pid, 0) # it is a check-signal
+                os.kill(self._daemon, 0) # it is a check-signal
             except OSError as e:
                 print 'Some error occured: ' + str(e)
                 print 'Restarting logger after 10 seconds'

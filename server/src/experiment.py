@@ -196,4 +196,11 @@ def actor_changestate_experiment(dqc, **kwargs):
             raise Exception('If you are sure to finish the experiment then pause it before!')
     x._state = newstate
     x._save()
+
+def actor_finish_active_experiment(dqc):
+    print 'Finishing active experiment..'
+    if dqc.get_experiment() == None:
+        return
+    # pausing active experiment
+    actor_changestate_experiment(dqc, code=dqc.get_experiment(), newstate=1)
         

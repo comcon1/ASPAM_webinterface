@@ -33,3 +33,9 @@ class Action(Page):
         return self._tmpl.string
     
     index.exposed = True
+    
+    def __del__(self):
+        if self._actdict.has_key('finish-00'):
+            print 'Running finishing listener!'
+            fun = self._actdict['finish-00']            
+            fun()
