@@ -223,7 +223,11 @@ class ImageRequest(CurrentCachable):
 #        f.add_axes(ax)
         pls = [] # plot lines
         for i in range(data.shape[1]-1):
-            pp = plt.plot(data[:,0], data[:,i+1], '-', lw=2, ms=2, color=params.curves['r%d'%i].color)
+            try: 
+                color_i = params.curves['r%d'%i].color
+                pp = plt.plot(data[:,0], data[:,i+1], '-', lw=2, ms=2, color=color_i)
+            except:
+                pp = plt.plot(data[:,0], data[:,i+1], '-', lw=2, ms=2)
             pls.append(pp[0])
         ax.set_xticks(mticks, minor=True)
         ax.set_xticklabels(mtlbls, minor=True, fontsize=8)
@@ -327,6 +331,18 @@ class RotImageRequest(ImageRequest):
     def __init__(self, rca, req):
         assert(type(rca), RotCurveAnalyzer)
         self._rca = rca
+        try:
+            self.day_color = params.daynight.day.bar.facecolor
+        except:
+            self.day_color = '#ff0000'        
+        try:
+            self.light_color = params.daynight.light.bar.facecolor
+        except:
+            self.light_color = '#00ff00'
+        try:
+            self.night_color = params.daynight.night.bar.facecolor
+        except:
+            self.night_color = '#0000ff'
         super(RotImageRequest, self).__init__(rca.loader, req)
 
     @property
@@ -415,20 +431,20 @@ class RotImageRequest(ImageRequest):
         zshift = 0.2 # between box and left/right side of the panel
         shift = zshift
         boxWidth = 1.0
-        
+            
         if self._req.daynightFlag & 1: # DAY
             pp = plt.bar(xs + shift, data[:,1], yerr=data[:,2], \
-                width=boxWidth, color=params.daynight.day.bar.facecolor)
+                width=boxWidth, color=self.day_color)
             pls.append(pp[0])
             shift += 1
         if self._req.daynightFlag & 2: # LIGHT
             pp = plt.bar(xs + shift, data[:,3], yerr=data[:,4], \
-                width=boxWidth, color=params.daynight.light.bar.facecolor)
+                width=boxWidth, color=self.light_color)
             pls.append(pp[0])
             shift += 1
         if self._req.daynightFlag & 4: # NIGHT
             pp = plt.bar(xs + shift, data[:,5], yerr=data[:,6], \
-                width=boxWidth, color=params.daynight.night.bar.facecolor)
+                width=boxWidth, color=self.night_color)
             pls.append(pp[0])
         
         ax.set_xlim(0,xs[-1]+shift+boxWidth+zshift)
@@ -460,17 +476,17 @@ class RotImageRequest(ImageRequest):
         
         if self._req.daynightFlag & 1: # DAY
             pp = plt.bar(xs + shift, data[:,1], \
-                width=boxWidth, color=params.daynight.day.bar.facecolor)
+                width=boxWidth, color=self.day_color)
             pls.append(pp[0])
             shift += 1
         if self._req.daynightFlag & 2: # LIGHT
             pp = plt.bar(xs + shift, data[:,2], \
-                width=boxWidth, color=params.daynight.light.bar.facecolor)
+                width=boxWidth, color=self.light_color)
             pls.append(pp[0])
             shift += 1
         if self._req.daynightFlag & 4: # NIGHT
             pp = plt.bar(xs + shift, data[:,3], \
-                width=boxWidth, color=params.daynight.night.bar.facecolor)
+                width=boxWidth, color=self.night_color)
             pls.append(pp[0])
         
         ax.set_xlim(0,xs[-1]+shift+boxWidth+zshift)
