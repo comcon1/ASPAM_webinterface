@@ -27,11 +27,34 @@ class DQController(Thread):
         args = [lgr, '-d', '-p', os.path.join(expdir, 'logger.pid'), \
             '-o', os.path.join(expdir, 'data00.xvg'), '-l', \
             os.path.join(expdir, 'logger.log')]
-        if True:
+        # guess an imitate mode
+        imitateMode = None
+        try:
+            if (int(params.daq.workingModeImitate) == 1):
+                imitateMode = True
+        except:
+            print 'Logger working mode is node defined in params [daq.workingModeImitate] variable.'            
+            imitateMode = True
+        # guess device file
+        deviceFile = None
+        try:
+            deviceFile = os.path.join(DQSERVROOT, params.daq.deviceFile)
+        except:
+            print 'Logger device-file is not defined in params [daq.deviceFile] variable.'
+            if imitateMode:
+                print 'File `dfi02.xvg` will be used by default!'
+                deviceFile = os.path.join(DQSERVROOT,'dfi02.xvg')
+            else:
+                print 'Device file will be guess by logger script!'
+                deviceFile = None
+        if imitateMode:
+            print 'Imitate mode is activated!'
             args.append('-i')
+        # device file could be set for imitate mode (text) or for working mode (device)
+        if deviceFile != None:
             args.append('-f')
-            args.append(os.path.join(DQSERVROOT,'dfi02.xvg'))
-        # pointing DEVICE is optional!
+            args.append(deviceFile)
+        # run the process
         subprocess.Popen(args, shell=False)
         while True:
             try:

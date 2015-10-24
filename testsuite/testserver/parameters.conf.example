@@ -27,3 +27,5 @@ daynight.day.bar.facecolor = #0000ff
 daynight.light.bar.facecolor = #ff0000
 daynight.night.bar.facecolor = #772200
 
+daq.workingModeImitate = 1
+daq.deviceFile = dfi02.xvg
