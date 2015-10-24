@@ -329,7 +329,7 @@ class RotImageParameters(ImageParameters):
 class RotImageRequest(ImageRequest):
     
     def __init__(self, rca, req):
-        assert(type(rca), RotCurveAnalyzer)
+        assert(type(rca) == RotCurveAnalyzer)
         self._rca = rca
         try:
             self.day_color = params.daynight.day.bar.facecolor
