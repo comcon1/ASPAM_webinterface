@@ -204,7 +204,7 @@ def actor_finish_active_experiment(dqc):
     # pausing active experiment
     try:
         actor_changestate_experiment(dqc, code=dqc.get_experiment(), newstate=1)
-    except e as Exception:
+    except Exception as e:
         print 'Exception occured during pausing the experiment!'
         print str(e)
         
