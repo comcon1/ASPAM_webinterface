@@ -67,7 +67,11 @@ def mkCheckBox(dic, name, id=None, cls=None):
            % (name+'_'+str(key), str(key), 'checked' if dic[key] else '')
         checks.append(s)
         if dic[key]:
-            color = params.curves['r%d'%i].color
+            try:
+                color = params.curves['r%d'%i].color
+            except:
+                color = '#aaaaaa'
+                print 'Colors should be defined for all curves!'
             i += 1
         else:
             color = '#dddddd'
