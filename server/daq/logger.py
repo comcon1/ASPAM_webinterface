@@ -177,8 +177,10 @@ else:
         nchan = len(vals)
         vals_prev = vals
         print("%s Number of channels: %d" % (timestamp(), nchan))
-        out.write("# Number of channels: %d\n" % nchan)
-        out.write('# timestamp '+''.join(map(lambda i: " channel-%d" % i, range(nchan))) + "\n#\n")
+        #TODO: determine number of channels from the file!
+        if not is_continue:
+            out.write("# Number of channels: %d\n" % nchan)
+            out.write('# timestamp '+''.join(map(lambda i: " channel-%d" % i, range(nchan))) + "\n#\n")
     
       vals_dif = []
       for i in xrange(nchan):

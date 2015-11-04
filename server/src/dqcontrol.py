@@ -54,6 +54,13 @@ class DQController(Thread):
         if deviceFile != None:
             args.append('-f')
             args.append(deviceFile)
+        try:
+            aqPeriod = params.daq.aqPeriod
+        except:
+            print 'Logger acquisition period is not defined in params [daq.aqPeriod] variable.'
+            print 'Period of 30 seconds will be used by default!.'
+        args.append('-t')
+        args.append(str(aqPeriod))
         # run the process
         subprocess.Popen(args, shell=False)
         while True:

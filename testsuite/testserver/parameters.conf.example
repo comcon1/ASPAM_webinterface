@@ -29,3 +29,4 @@ daynight.night.bar.facecolor = #772200
 
 daq.workingModeImitate = 1
 daq.deviceFile = dfi02.xvg
+daq.aqPeriod = 30
