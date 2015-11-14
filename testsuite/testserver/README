@@ -19,7 +19,8 @@ The following strings should be inserted into htdigest:
 username:realm:HA1_hash_string
 
   The *realm* string should be equal to <tools.auth_digest.realm> parameter. *HA1_hash_string* can be 
-calculated as MD5 digest of the following string "username:realm:password".
+calculated as MD5 digest of the following string "username:realm:password". REALM parameter is not KEY
+parameter! The htdigest file should be located at DQSROOTDIR variable defined in *config.py*.
 
   Modify <server.*> parameters as it is pointed in the documentation of CherryPy 3.8.x and higher to 
 adopt WSGI server behavior.
