@@ -8,7 +8,8 @@ Created on Wed Aug  5 21:42:09 2015
 import os.path
 import sys
 
-sys.path.append('../../')
+sys.path.append(os.path.join(os.path.dirname(__file__),'../../'))
+DQTEMPLDIR = os.path.join(os.path.dirname(__file__),'../templates')
 
 DQSPRGNAME = 'Rat Wheel Analyzer'
 DQSVERSION = '0.1'

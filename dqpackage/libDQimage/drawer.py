@@ -71,6 +71,10 @@ class ImageParameters(object):
     def setDiapT(self, start=None, stop=None):
         bp = None if start is None else (max(start,self.bt) - self.bt) / self.tstep
         ep = None if stop is None else (min(stop,self.et-1) - self.bt) / self.tstep
+        if start < self.bt:
+             bp = None
+        if stop > self.et:
+             ep = None
         self.setDiap(bp, ep)
 
     def __hash__(self):
@@ -133,6 +137,9 @@ class ImageRequest(CurrentCachable):
         assert(type(self._ldr) == Loader)
         self._req = req
         assert(issubclass(type(self._req), ImageParameters))
+        if (self._req.startt >= self._req.stopt):
+            raise AttributeError('Invalid time boundaries for ImageRequest: %d, %d!' \
+                   % (self._req.startt,self._req.stopt) )
         self._ifn = 'data.png'
         #TODO: may be other formats?
         self._cachelist = [ 'data.png' ]
@@ -200,10 +207,13 @@ class ImageRequest(CurrentCachable):
         ''' All drawable array --- in simple format '''
         if self._drawData is None:
             data = self._ldr.getPartT( self._req.startt  )
+            print 'Data loaded: %d lines' % data.shape[0]
             #TODO: concatenate if draw through several parts
             starti = data['t'].searchsorted( self._req.startt )
             stopi = data['t'].searchsorted( self._req.stopt )
+            print 'Timerange: %d - %d' % (self._req.startt, self._req.stopt)
             data = data[starti:stopi]
+            print 'Data selected: %d lines' % data.shape[0]
             self._drawData = np.array(data.tolist(), dtype=np.int64)
             print 'Rats selected: ',  list(set(self._req.ratlist) | {0})
             self._drawData = self._drawData[:, list(set(self._req.ratlist) | {0})]

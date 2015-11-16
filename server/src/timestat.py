@@ -16,7 +16,7 @@ from cherrypy.lib import static
 class TimeStatistics(Page):
     
     def __init__(self):
-        super(TimeStatistics, self).__init__('../templates/timestat.xml') 
+        super(TimeStatistics, self).__init__(os.path.join(DQTEMPLDIR,'timestat.xml'))
 
     def index(self, code=None, ratlist=None, nrats=None, scale='5:3', yunits='meters',
               regen_cache=False, fromdate=None, tilldate=None, dayflag=3):

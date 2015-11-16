@@ -12,7 +12,7 @@ from experiment import Experiment
 class ExperimentsBlock(Page):
     
     def __init__(self):
-        super(ExperimentsBlock, self).__init__('../templates/index_experiment.xml')
+        super(ExperimentsBlock, self).__init__(os.path.join(DQTEMPLDIR,'index_experiment.xml'))
 
     def getList(self):
         assert(os.path.isdir(self._edir))
@@ -41,7 +41,7 @@ class IndexPage(Page):
 
     def __init__(self, contrl):
         self._dqc = contrl
-        super(IndexPage, self).__init__('../templates/index.xml')
+        super(IndexPage, self).__init__(os.path.join(DQTEMPLDIR,'index.xml'))
 
     def index(self):
         self._tmpl.reset()

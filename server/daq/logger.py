@@ -97,8 +97,69 @@ lck = open(args.lockf, 'w')
 lck.write(str(os.getpid()))
 lck.close()
 
-is_continue = os.path.isfile(args.out) 
+is_continue = os.path.isfile(args.out)
+period = int(args.period)
 
+if is_continue:
+	out = open(args.out, 'a+b')
+	outsz = os.stat(args.out).st_size
+	out.seek(outsz)
+	out.seek(-1,1)
+	if ( out.read(1) != '\n'):
+	    print 'Incorrect file finalization!'
+	    raise NotImplementedError('Refinalization was not realized!')
+	# skip the last break
+	out.seek(-1,1)
+	# exclude the last string
+	lastsymb = ''
+	laststr = ''
+	while lastsymb != '\n':
+	  laststr = lastsymb + laststr
+	  out.seek(-1,1)
+	  lastsymb = out.read(1)
+	  out.seek(-1,1)
+	# exclude information about num of channels
+	lastar = laststr.split()
+	# skip the pre-last break
+	out.seek(-1,1)
+	# exclude the pre-last string
+	lastsymb = ''
+	laststr = ''
+	while lastsymb != '\n':
+	  laststr = lastsymb + laststr
+	  out.seek(-1,1)
+	  lastsymb = out.read(1)
+	  out.seek(-1,1)
+	# exclude information about num of channels
+	prelastar = laststr.split()
+
+	newnchan = len(lastar)-1
+	print 'Number-of-channels (%d) was excluded from the dump!' % (newnchan)
+		
+	newperiod = int(lastar[0]) - int(prelastar[0])
+	if (period == newperiod):
+		pass
+	else:
+		period = newperiod
+		print 'Force setting up the %d for the period!' % period
+
+	out.close()
+	
+	out = open(args.out, 'a+')
+	zers = ''.join(map(lambda v: "%5d" % v, [0]*newnchan)) + '\n'
+	tnow = int(time.time())
+	lasttime = int(lastar[0])
+	nskipp = (tnow-lasttime)/period+3 # 3 periods - is time buffer!!
+	t = 0
+	for i in range(nskipp):
+		t = lasttime+period*(i+1)
+		out.write("%11d" %  t)
+		out.write(zers)
+		out.flush()
+	time.sleep(-time.time()+t+period)
+	out.close()
+	
+	
 out = open(args.out, 'a+')
 
 if args.imitate:
@@ -133,8 +194,8 @@ if args.imitate:
         out.flush()
         
         tnow = time.time()
-        icycle = int((tnow - tstart) / args.period)
-        tnext = tstart + (icycle + 1) * args.period
+        icycle = int((tnow - tstart) / period)
+        tnext = tstart + (icycle + 1) * period
         time.sleep(tnext - tnow)
         if imitf.tell() == os.fstat(imitf.fileno()).st_size:
             print 'Logger reads imitation file from the very beggining!'
@@ -172,7 +233,7 @@ else:
       except:
         print("%s Corrupted reply string '%s'" % (timestamp(),s))
         continue
-    
+      
       if nchan == 0:
         nchan = len(vals)
         vals_prev = vals
@@ -193,6 +254,6 @@ else:
       out.flush()
     
       tnow = time.time()
-      icycle = int((tnow - tstart) / args.period)
-      tnext = tstart + (icycle + 1) * args.period
+      icycle = int((tnow - tstart) / period)
+      tnext = tstart + (icycle + 1) * period
       time.sleep(tnext - tnow)

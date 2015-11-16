@@ -14,7 +14,7 @@ from cherrypy.lib import static
 class ExperimentReview(Page):
 
     def __init__(self):
-        super(ExperimentReview, self).__init__('../templates/expreview.xml') 
+        super(ExperimentReview, self).__init__(os.path.join(DQTEMPLDIR,'expreview.xml')) 
     
     def index(self, code=None, ratlist=None, nrats=None, scale='5:3', yunits='meters',
               regen_cache=False, fromdate=None, tilldate=None):
@@ -36,10 +36,15 @@ class ExperimentReview(Page):
             return self.errorPage(e)
             
         
+        print 'Data was recorded in diapazone: %d-%d' % (ip0.bt, ip0.et)
         self._fromdate = dq.tu.lower_day(ip0.bt) if fromdate is None else int(fromdate)
         self._tilldate = dq.tu.lower_day(ip0.et) if tilldate is None else int(tilldate)
         
         ip0.setDiapT(self._fromdate, self._tilldate+24*3600)
+        print 'Requesting image for data in range %d-%d' % (self._fromdate, self._tilldate+24*3600)
+
+	print 'Frame range: %d-%d:%d' % (ip0.startt, ip0.stopt, ip0._tstep)
+
         ip0.setFigSize(tuple(map(float,scale.split(':'))))
         __ratlist = [k for k,v in self._selected_rats.iteritems() if v]
 
