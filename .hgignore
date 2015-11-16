@@ -1,7 +1,14 @@
-/.*\.pyc$
-/\..*\.sw[po]$
-/server/src/cherrypy$
-/testsuite/patterns/test\.\.*$
-/daqsoft\.*$
-/\.spyder.*$
-/testsuite/testserver/.*\.conf$
+syntax: glob
+
+*.pyc
+server/src/cherrypy
+testsuite/patterns/test.*
+daqsoft*
+.spyder*
+testsuite/testserver/*.conf
+testsuite/testserver/expdata/test14nov
+
+syntax: regexp
+
+^.*\.sw[po]$
+
