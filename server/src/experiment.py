@@ -199,7 +199,7 @@ def actor_changestate_experiment(dqc, **kwargs):
 
 def actor_finish_active_experiment(dqc):
     print 'Finishing active experiment..'
-    if dqc.get_experiment() == None:
+    if dqc.get_experiment() is None:
         return
     # pausing active experiment
     try:

@@ -55,13 +55,13 @@ class ImageParameters(object):
     def setDiap(self, start=None, stop=None):
         '''Setting interval of plot. Start and Stop borders points the position
         from the beggining or the end of data array. Units - in timesteps.'''
-        if start == None:
+        if start is None:
             self._start = 0
         else:
             if int(start) != start:
                 raise AttributeError('start should be integer; not '+str(type(start)))
             self._start = ( start + self._steps ) % self._steps
-        if stop == None:
+        if stop is None:
             self._stop = self._steps
         else:
             if int(stop) != stop:
@@ -69,8 +69,8 @@ class ImageParameters(object):
             self._stop = ( stop + self._steps ) % self._steps
     
     def setDiapT(self, start=None, stop=None):
-        bp = None if start == None else (max(start,self.bt) - self.bt) / self.tstep
-        ep = None if stop == None else (min(stop,self.et-1) - self.bt) / self.tstep
+        bp = None if start is None else (max(start,self.bt) - self.bt) / self.tstep
+        ep = None if stop is None else (min(stop,self.et-1) - self.bt) / self.tstep
         self.setDiap(bp, ep)
 
     def __hash__(self):
@@ -198,7 +198,7 @@ class ImageRequest(CurrentCachable):
     @property
     def drawData(self):
         ''' All drawable array --- in simple format '''
-        if self._drawData == None:
+        if self._drawData is None:
             data = self._ldr.getPartT( self._req.startt  )
             #TODO: concatenate if draw through several parts
             starti = data['t'].searchsorted( self._req.startt )
@@ -348,7 +348,7 @@ class RotImageRequest(ImageRequest):
     @property
     def drawData(self):
         ''' All drawable array --- in simple format '''
-        if self._drawData != None:
+        if self._drawData is not None:
             return self._drawData
         if self._req.plotType == 'raw':
             return super(RotImageRequest, self).drawData

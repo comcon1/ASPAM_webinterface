@@ -72,7 +72,7 @@ class Cachable(object):
         corrupted. '''
         for f in os.listdir(self._dir):
             for r in self._cachelist:
-                if re.match(r, f) != None:
+                if re.match(r, f) is not None:
                     try:
                         fdl = os.path.join(self._dir, f)
                         print 'Deleting ',fdl 

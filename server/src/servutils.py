@@ -36,7 +36,7 @@ class Page(object):
     ''' Root abstract class for every HTML page. '''
      
     def __init__(self, fname):
-        if fname == None:
+        if fname is None:
             #TODO: implement DO_NOT_LOAD_PAGE_CLASS_ITSELF
             pass
         else:

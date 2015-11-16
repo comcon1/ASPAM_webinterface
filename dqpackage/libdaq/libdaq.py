@@ -59,7 +59,7 @@ class RawCurveAnalyzer(object):
 class DrinkCurveAnalyzer(RawCurveAnalyzer):
     
     def detectRefills(self):
-        if self._rfl != None:
+        if self._rfl is not None:
             return self._rfl
         rfd = RefillDetector(self._ldr)
         sa, sb = rfd.detect_shifts()
@@ -75,7 +75,7 @@ class RotCurveAnalyzer(RawCurveAnalyzer):
     
     @property
     def rawdata(self):
-        if self._rawdata == None:
+        if self._rawdata is None:
             rawdata = self.getData(-1,-1)
             self._rawdata = np.array(rawdata.tolist(), dtype=np.int32)
         return self._rawdata
@@ -83,7 +83,7 @@ class RotCurveAnalyzer(RawCurveAnalyzer):
     @property
     def cumdata(self):
         '''Return numerical integral of data'''
-        if (self._cumdata == None):
+        if (self._cumdata is None):
             self._cumdata = np.copy(self.rawdata)
             self._cumdata[:,1:] = np.cumsum(self.rawdata[:,1:], axis=0)
         return self._cumdata

@@ -20,7 +20,7 @@ class DQController(Thread):
         Thread.__init__(self)
     
     def start_logger(self):
-        assert(self._expcode != None)
+        assert(self._expcode is not None)
         lgr = os.path.join(DQSERVROOT, 'logger.py')
         expdir = os.path.join(DQEXPDATADIR, self._expcode)
         assert(os.path.isdir(expdir))
@@ -51,7 +51,7 @@ class DQController(Thread):
             print 'Imitate mode is activated!'
             args.append('-i')
         # device file could be set for imitate mode (text) or for working mode (device)
-        if deviceFile != None:
+        if deviceFile is not None:
             args.append('-f')
             args.append(deviceFile)
         try:
@@ -89,7 +89,7 @@ class DQController(Thread):
         return True
     
     def stop_logger(self):
-        if (self._daemon == None):
+        if (self._daemon is None):
             # nothing to do
             return
         pidfile = os.path.join(DQEXPDATADIR, self._expcode, 'logger.pid')
@@ -120,9 +120,9 @@ class DQController(Thread):
         print 'Logger was stoped!'
     
     def set_experiment(self, expcode):
-        if self._daemon != None:
+        if self._daemon is not None:
             raise AttributeError('Can not change experiment while logger is run!')
-        if expcode != None:
+        if expcode is not None:
             expdir = os.path.join(DQEXPDATADIR, expcode)
             if not os.path.isdir(expdir):
                 raise OSError, 'directory '+expdir+' not found.'
@@ -133,13 +133,13 @@ class DQController(Thread):
         return self._expcode
     
     def is_started(self):
-        return self._daemon != None
+        return self._daemon is not None
     
     def run(self):
         print 'Starting logger for %s!' % (self._expcode)
         while True:
             time.sleep(2)
-            if self._daemon == None:
+            if self._daemon is None:
                 continue
             try:
                 os.kill(self._daemon, 0) # it is a check-signal

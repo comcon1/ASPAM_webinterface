@@ -88,7 +88,7 @@ class RefillDetector (CurrentCachable):
         return shifts_a, shifts_b
 
     def determine(self):
-        if self._nshifts == None:
+        if self._nshifts is None:
             raise AssertionError('Shifts have not been determined yet!')
         ssa = np.ones((len(self._nshifts)+len(self._pshifts), 2), \
                 dtype=np.int32)

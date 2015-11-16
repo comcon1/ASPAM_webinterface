@@ -22,7 +22,7 @@ class CombinedCurve(object):
         self._top = None
 
     def pushCurve(self, curve):
-        if self._top == None:
+        if self._top is None:
             # first time!
             self._data = np.array(curve.data)
             self._top = np.array(curve.top)

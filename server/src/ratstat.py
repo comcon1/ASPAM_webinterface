@@ -19,11 +19,11 @@ class RatStatistics(Page):
     def index(self, code=None, ratlist=None, nrats=None, scale='5:3', yunits='meters',
               regen_cache=False, fromdate=None, tilldate=None, dayflag=3):
                   
-        if code == None:
+        if code is None:
             return 'Specify code!'
         self._ex = Experiment(os.path.join(self._edir, code))
         
-        if (ratlist != None):
+        if (ratlist is not None):
             self._selected_rats = dict.fromkeys(range(1, self._ex.nrats+1), False)
             for i in map(int, ratlist.split(',')):
                 self._selected_rats[i] = True
@@ -33,8 +33,8 @@ class RatStatistics(Page):
         rca = dq.RotCurveAnalyzer(os.path.join(self._ex._dir,'data00.xvg'))
         ip0 = qi.RotImageParameters(rca.loader)    
         
-        self._fromdate = dq.tu.lower_day(ip0.bt) if fromdate == None else int(fromdate)
-        self._tilldate = dq.tu.lower_day(ip0.et) if tilldate == None else int(tilldate)
+        self._fromdate = dq.tu.lower_day(ip0.bt) if fromdate is None else int(fromdate)
+        self._tilldate = dq.tu.lower_day(ip0.et) if tilldate is None else int(tilldate)
         
         ip0.setDiapT(self._fromdate, self._tilldate+24*3600)
         ip0.setFigSize(tuple(map(float,scale.split(':'))))

@@ -102,7 +102,7 @@ class Loader(CurrentCachable):
         return len(self._p.portions)
 
     def getPartID(self, t=None):
-        if t != None:
+        if t is not None:
             cc = 0
             i = None
             for prt in self._p.portions:
@@ -110,7 +110,7 @@ class Loader(CurrentCachable):
                     i = cc 
                     break
                 cc += 1
-            if i == None:
+            if i is None:
                 raise AttributeError('Such time not found in all pieces.')
             return i
         else:
