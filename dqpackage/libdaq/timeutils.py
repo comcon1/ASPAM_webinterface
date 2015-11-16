@@ -145,6 +145,8 @@ def form_inday_intervals(startm, stopm, daybords):
     
     retar = mlab.frange(_begin, _end, 24*3600)
     retar = [ (i,i+_int) for i in retar]
+    if len(retar) == 0:
+        raise AttributeError('Empty intervals: no data at all')
     " ..Cutting suspending ends.. "       
     if retar[0][0] < thefirst:
         retar[0] = thefirst, retar[0][1]

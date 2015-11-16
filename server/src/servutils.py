@@ -44,17 +44,17 @@ class Page(object):
             self._edir = os.path.join(DQSROOTDIR, 'expdata')
         
     def errorPage(self, e):
-        self._tmpl = XMLTemplate('../templates/errorPage.xml')
-        self._tmpl.sub('type', str(type(e)).split("'")[1])
-        self._tmpl.sub('message', str(e) )
+        self._etmpl = XMLTemplate('../templates/errorPage.xml')
+        self._etmpl.sub('type', str(type(e)).split("'")[1])
+        self._etmpl.sub('message', str(e) )
         
         import traceback
         traceback.print_exc()
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        self._tmpl.sub('position', '%s:%d' % (fname, exc_tb.tb_lineno) )
+        self._etmpl.sub('position', '%s:%d' % (fname, exc_tb.tb_lineno) )
         
-        return self._tmpl.string
+        return self._etmpl.string
         
 
 def mkCheckBox(dic, name, id=None, cls=None):
@@ -93,9 +93,18 @@ def mkComboBox(dic, selected, name, id=None, cls=None, sort_flag=False):
     l.append('</select>')
     return '\n'.join(l)
 
-def mkDateCombo(startt, stopt, curt, name, id=None, cls=None):
+def mkDateCombo(startt, stopt, curt, name, id=None, cls=None, addspecial=[]):
     zz = np.arange(dq.tu.lower_day(startt), dq.tu.lower_day(stopt)+1, step=24*3600)
     dates = map(lambda x: time.strftime('%d.%m',time.localtime(x)), zz)
+    for ad in addspecial:
+        if ad == 'hour_ago':
+            zz = list(zz)
+            zz.append(int(time.time())-3600)
+            dates.append('hour ago')
+        if ad == 'now':
+            zz = list(zz)
+            zz.append(int(time.time()))
+            dates.append('now')
     dic = dict(zip(zz,dates))
     return mkComboBox(dic, curt, name, id, cls, sort_flag=True)
 

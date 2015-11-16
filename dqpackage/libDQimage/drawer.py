@@ -223,6 +223,8 @@ class ImageRequest(CurrentCachable):
 
     def _init_wo_cache(self):
         data = self.drawData
+        if data.shape[0] < 10:
+            raise AttributeError('Too small amount of data for analyse! Wait for more data!')
         print 'Image will be drawn for data of %dx%d' % data.shape
         mticks, mtlbls = self._genticks(data[:,0], 'h1',)
         jticks, jtlbls = self._genticks(data[:,0], 'dc')

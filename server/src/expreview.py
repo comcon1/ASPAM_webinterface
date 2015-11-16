@@ -42,8 +42,7 @@ class ExperimentReview(Page):
         
         ip0.setDiapT(self._fromdate, self._tilldate+24*3600)
         print 'Requesting image for data in range %d-%d' % (self._fromdate, self._tilldate+24*3600)
-
-	print 'Frame range: %d-%d:%d' % (ip0.startt, ip0.stopt, ip0._tstep)
+        print 'Frame range: %d-%d:%d' % (ip0.startt, ip0.stopt, ip0._tstep)
 
         ip0.setFigSize(tuple(map(float,scale.split(':'))))
         __ratlist = [k for k,v in self._selected_rats.iteritems() if v]
@@ -52,11 +51,15 @@ class ExperimentReview(Page):
         ip0.Yunits = yunits
         if regen_cache:
             ip0.setRegen()
-
-        ip0.plotType = 'raw'        
-        ir0 = qi.RotImageRequest(rca, ip0)
-        ip0.plotType = 'cumulative'
-        ir1 = qi.RotImageRequest(rca, ip0)
+        
+        try: 
+            ip0.plotType = 'raw'        
+            ir0 = qi.RotImageRequest(rca, ip0)
+            ip0.plotType = 'cumulative'
+            ir1 = qi.RotImageRequest(rca, ip0)
+        except Exception as e:
+            print '******** ERROR DURING REQUEST OF PICTURE PREPARATION!! *********'
+            return self.errorPage(e)
 
         self._tmpl.reset();
         self._tmpl.sub('expcode', code)
@@ -64,8 +67,8 @@ class ExperimentReview(Page):
         self._tmpl.sub('ratcheckbox', mkCheckBox(self._selected_rats, 'selectedrats'))
         self._tmpl.sub('unitscombo', mkComboBox({'meters':'meters','turns':'turns'}, yunits, 'yunits'))
         self._tmpl.sub('scalecombo', mkComboBox({'5:3':'50%','7.5:4.5':'75%','10:6':'100%'}, scale, 'scale'))
-        self._tmpl.sub('fromdate', mkDateCombo(ip0.bt, ip0.et, self._fromdate, 'fromdate') )
-        self._tmpl.sub('tilldate', mkDateCombo(ip0.bt, ip0.et, self._tilldate, 'tilldate') )
+        self._tmpl.sub('fromdate', mkDateCombo(ip0.bt, ip0.et, self._fromdate, 'fromdate', addspecial=['hour_ago']) )
+        self._tmpl.sub('tilldate', mkDateCombo(ip0.bt, ip0.et, self._tilldate, 'tilldate', addspecial=['now']) )
         self._tmpl.sub('nrats', self._ex.nrats);
         self._tmpl.sub('simplot', '/plotdata/'+ir0.getImage(absolute=False) )
         self._tmpl.sub('cumplot', '/plotdata/'+ir1.getImage(absolute=False) )

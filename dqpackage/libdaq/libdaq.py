@@ -99,14 +99,22 @@ class RotCurveAnalyzer(RawCurveAnalyzer):
         data = self.getData(startut, stoput, raw=True)
         print 'DDDDDDDD', data.shape
         days = tmu.form_periodic_days(daystart, startut, stoput)
-        daylight = tmu.form_inday_intervals(morning, evening, days)
+        # collect daylight data
         light_mask = np.zeros(data.shape[0], dtype=np.int8)
-        for a,b in daylight:
-            light_mask[data[:,0].searchsorted(a):data[:,0].searchsorted(b)].fill(1)
-        daynight = tmu.form_inday_intervals(evening, morning, days)
+        try:
+            daylight = tmu.form_inday_intervals(morning, evening, days)
+            for a,b in daylight:
+                light_mask[data[:,0].searchsorted(a):data[:,0].searchsorted(b)].fill(1)
+        except AttributeError as e:
+            print '** ATTENTION ** ' + str(e)
+        # collect night data
         night_mask = np.zeros(data.shape[0], dtype=np.int8)
-        for a,b in daynight:
-            night_mask[data[:,0].searchsorted(a):data[:,0].searchsorted(b)].fill(1)
+        try:
+            daynight = tmu.form_inday_intervals(evening, morning, days)
+            for a,b in daynight:
+                night_mask[data[:,0].searchsorted(a):data[:,0].searchsorted(b)].fill(1)
+        except AttributeError as e:
+            print '** ATTENTION ** ' + str(e)
         
         resday = np.zeros((len(days),data.shape[1]))
         resday[:,0] = [ tmu.lower_day(i) for i,j in days ]
