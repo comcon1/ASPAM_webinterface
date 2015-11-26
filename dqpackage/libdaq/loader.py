@@ -32,7 +32,7 @@ import numpy as np
 from matplotlib.mlab import movavg
 import os,re
 import os.path
-import md5
+import md5,sys
 import pickle
 from StringIO import StringIO
 from core import CurrentCachable
@@ -263,6 +263,7 @@ Raw data begins from byte #%d. ''' % \
         self._recalcParts = range( 0, len(self._p.portions) )
     
     def _continuePartionate(self):
+        print 'cprt0'
         f = open(self._apath)
         f.seek(self._p.zshift + (self._p.portions[-1]['b']+self._p.bfin) * self._p.strs )
         self._p.portions.pop()
@@ -273,7 +274,10 @@ Raw data begins from byte #%d. ''' % \
             f.seek(-self._p.bfin*self._p.strs, 1)
             curbline = (f.tell()-self._p.zshift) / self._p.strs
             p0 = StringIO(f.read((self._p.bfsz+2*self._p.bfin)*self._p.strs))
+            print 'loading..',
+            sys.stdout.flush()
             a0 = np.loadtxt(p0, dtype=self._p.dtp)
+            print 'OK'
             print a0.shape
             fnm = os.path.join(self._dir, 'part%d.npy' % (cc))
             self._p.addPortion(curbline, curbline + a0.shape[0], a0['t'][0], \
@@ -292,7 +296,10 @@ Raw data begins from byte #%d. ''' % \
         self._p.lastfsz = ( curbline + a0.shape[0])*self._p.strs 
         self._p.addPortion(curbline, curbline + a0.shape[0], a0['t'][0], \
                 a0['t'][-1],fnm)
+        print 'saving..',
+        sys.stdout.flush()
         np.save(fnm, a0)
+        print 'OK'
         del a0; del p0
         
         f = open(os.path.join(self._dir, '_ldrparams'), 'w')
@@ -300,6 +307,7 @@ Raw data begins from byte #%d. ''' % \
         f.close()
 
         self._recalcParts = range( ncp, len(self._p.portions) )
+        print 'cprt1'
 
     def _init_wo_cache(self):
         self._p = LDRParams()
