@@ -289,8 +289,11 @@ Raw data begins from byte #%d. ''' % \
         fnm = os.path.join(self._dir, 'part%d.npy' % (cc))
         curbline = (f.tell()-self._p.zshift) / self._p.strs
         # protect from reading non-full line. Reading integer count of lines.
+        print 'loading strio..',
+        sys.stdout.flush()
         p0 = StringIO(f.read( ( ( os.stat(self._apath).st_size - self._p.zshift - f.tell() ) /
             self._p.strs ) * self._p.strs ))
+        print 'OK'
         a0 = np.loadtxt(p0, dtype=self._p.dtp)
         # update information about last processed byte
         self._p.lastfsz = ( curbline + a0.shape[0])*self._p.strs 
