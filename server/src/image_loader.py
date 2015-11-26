@@ -25,6 +25,7 @@ prs.add_argument('-s', dest="scale", type=str, help='scale of the plot', default
 prs.add_argument('-y', dest="yunits", type=str, help='Units of the OY axis', default='meters')
 
 prs.add_argument('-u', dest="regen_cache", action="store_true", help='force regenerate')
+prs.add_argument('-p', dest="fastpreview", action="store_true", help='mode of fastest look')
 #prs.add_argument('-l', dest="log", metavar='FILE', type=str, help='log file',default='logger.log')
 
 args = prs.parse_args()
@@ -38,6 +39,11 @@ if args.typ in ['expreview_raw', 'expreview_cumulative']:
         ip0 = qi.RotImageParameters(rca.loader)    
     except Exception as e:
         sys.exit(1)
+
+    if args.fastpreview:
+        # force reset dates
+        args.fromdate = ip0.et - 3600
+        args.tilldate = ip0.et
             
     print 'Data was recorded in diapazone: %d-%d' % (ip0.bt, ip0.et)
     _fromdate = dq.tu.lower_day(ip0.bt) if args.fromdate == -1 else int(args.fromdate)

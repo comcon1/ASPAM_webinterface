@@ -18,7 +18,7 @@ class ExperimentReview(Page):
         super(ExperimentReview, self).__init__(os.path.join(DQTEMPLDIR,'expreview.xml')) 
     
     def index(self, code=None, ratlist=None, nrats=None, scale='5:3', yunits='meters',
-              regen_cache=False, fromdate=None, tilldate=None):
+              regen_cache=False, fromdate=None, tilldate=None, fastpreview=False):
         
         if code is None:
             return 'Specify code!'
@@ -45,6 +45,8 @@ class ExperimentReview(Page):
         command += ' -s '+ scale
         command += ' -r' + ','.join(map(str,__ratlist))
         command += ' -y ' + yunits
+        if fastpreview:
+            command += ' -p '
         print command
 
         pp = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
@@ -76,6 +78,8 @@ class ExperimentReview(Page):
         command += ' -s '+ scale
         command += ' -r' + ','.join(map(str,__ratlist))
         command += ' -y ' + yunits
+        if fastpreview:
+            command += ' -p '
         print command
 
         pp = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
