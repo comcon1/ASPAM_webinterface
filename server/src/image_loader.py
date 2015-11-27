@@ -4,6 +4,7 @@
 import os, sys, argparse
 from config import *
 from servutils import *
+import profile,traceback
 
 '''
 Standalone script that loads images by parameters.
@@ -33,42 +34,47 @@ args = prs.parse_args()
 futurefile = os.path.join(args.exdir, args.datfil)
 print futurefile
 
-if args.typ in ['expreview_raw', 'expreview_cumulative']:
-    try:
-        rca = dq.RotCurveAnalyzer(futurefile)
-        ip0 = qi.RotImageParameters(rca.loader)    
-    except Exception as e:
-        sys.exit(1)
-
-    if args.fastpreview:
-        # force reset dates
-        args.fromdate = ip0.et - 3600
-        args.tilldate = ip0.et
-            
-    print 'Data was recorded in diapazone: %d-%d' % (ip0.bt, ip0.et)
-    _fromdate = dq.tu.lower_day(ip0.bt) if args.fromdate == -1 else int(args.fromdate)
-    _tilldate = dq.tu.lower_day(ip0.et) if args.tilldate == -1 else int(args.tilldate)
+def MUMU():
+    if args.typ in ['expreview_raw', 'expreview_cumulative']:
+        try:
+            rca = dq.RotCurveAnalyzer(futurefile)
+            ip0 = qi.RotImageParameters(rca.loader)    
+        except Exception as e:
+            print '******** ERROR DURING LOADING AND ANALYSING!! *********'
+            traceback.print_exc()
+            sys.exit(1)
     
-    ip0.setDiapT(_fromdate, _tilldate+24*3600)
-    print 'Requesting image for data in range %d-%d' % (_fromdate, _tilldate+24*3600)
-    print 'Frame range: %d-%d:%d' % (ip0.startt, ip0.stopt, ip0._tstep)
-    
-    ip0.setFigSize(tuple(map(float,args.scale.split(':'))))
-    __ratlist = map(int,args.selected_rats.split(','))
-    ip0.setRatList(__ratlist)
-    ip0.Yunits = args.yunits
-    if args.regen_cache:
-        ip0.setRegen()
-    try:
-        ip0.plotType = 'raw' if args.typ == 'expreview_raw' else 'cumulative'
-        ir0 = qi.RotImageRequest(rca, ip0)
-    except Exception as e:
-        print '******** ERROR DURING REQUEST OF PICTURE PREPARATION!! *********'
-        print str(e)
-        sys.exit(1)
+        if args.fastpreview:
+            # force reset dates
+            args.fromdate = ip0.et - 3600
+            args.tilldate = ip0.et
+                
+        print 'Data was recorded in diapazone: %d-%d' % (ip0.bt, ip0.et)
+        _fromdate = dq.tu.lower_day(ip0.bt) if args.fromdate == -1 else int(args.fromdate)
+        _tilldate = dq.tu.lower_day(ip0.et) if args.tilldate == -1 else int(args.tilldate)
+        
+        ip0.setDiapT(_fromdate, _tilldate+24*3600)
+        print 'Requesting image for data in range %d-%d' % (_fromdate, _tilldate+24*3600)
+        print 'Frame range: %d-%d:%d' % (ip0.startt, ip0.stopt, ip0._tstep)
+        
+        ip0.setFigSize(tuple(map(float,args.scale.split(':'))))
+        __ratlist = map(int,args.selected_rats.split(','))
+        ip0.setRatList(__ratlist)
+        ip0.Yunits = args.yunits
+        if args.regen_cache:
+            ip0.setRegen()
+        try:
+            ip0.plotType = 'raw' if args.typ == 'expreview_raw' else 'cumulative'
+            ir0 = qi.RotImageRequest(rca, ip0)
+        except Exception as e:
+            print '******** ERROR DURING REQUEST OF PICTURE PREPARATION!! *********'
+            traceback.print_exc()
+            sys.exit(1)
+    # print resulting information
+    print 'RESULT_BT:' + str(ip0.bt)
+    print 'RESULT_ET:' + str(ip0.et)
+    print 'IMAGE_PATH:' + ir0.getImage(absolute=False)
 
-# print resulting information
-print 'RESULT_BT:' + str(ip0.bt)
-print 'RESULT_ET:' + str(ip0.et)
-print 'IMAGE_PATH:' + ir0.getImage(absolute=False)
+MUMU()
+
 sys.exit(0)
