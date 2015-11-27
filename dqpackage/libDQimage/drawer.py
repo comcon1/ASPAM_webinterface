@@ -170,11 +170,11 @@ class ImageRequest(CurrentCachable):
             if precis[1] == '0':
                 zers = []
                 for tt in t:
-                    if time.gmtime(tt).tm_hour == 0:
+                    if time.localtime(tt).tm_hour == 0:
                         zers.append(t.index(tt))
                 while len(zers):
                     t.pop(zers.pop())
-            l = [ time.strftime('%H', time.gmtime(int(ii))) for ii in t ]
+            l = [ time.strftime('%H', time.localtime(int(ii))) for ii in t ]
         elif precis[0] == 'd':
             if precis[1] == 'c': # at the center of a day
                 gm_1day = tmu.upper_day(ta[0]) 
@@ -191,12 +191,12 @@ class ImageRequest(CurrentCachable):
             if len(t) > 0:
                 if t[-1] > ta[-1]:
                     t.pop()
-                l = [ time.strftime(fmt, time.gmtime(int(ii))) for ii in t ]
+                l = [ time.strftime(fmt, time.localtime(int(ii))) for ii in t ]
                 print t,l
             else:
                 # at least one tick :-)
                 t = [ (ta[0]+ta[1]) / 2. ]
-                l = [ time.strftime(fmt, time.gmtime(ta[0]) ) ]
+                l = [ time.strftime(fmt, time.localtime(ta[0]) ) ]
         else:
             raise NotImplementedError('Precis type ``%s'' not implemented' \
                     % precis)
@@ -214,7 +214,7 @@ class ImageRequest(CurrentCachable):
             print 'Timerange: %d - %d' % (self._req.startt, self._req.stopt)
             data = data[starti:stopi]
             print 'Data selected: %d lines' % data.shape[0]
-            self._drawData = np.array(data.tolist(), dtype=np.int64)
+            self._drawData = np.array(data.tolist(), dtype=np.float32)
             print 'Rats selected: ',  list(set(self._req.ratlist) | {0})
             self._drawData = self._drawData[:, list(set(self._req.ratlist) | {0})]
             self._drawData[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1
@@ -365,11 +365,11 @@ class RotImageRequest(ImageRequest):
         if self._req.plotType == 'raw':
             return super(RotImageRequest, self).drawData
         elif self._req.plotType == 'cumulative':
-            data = self._rca.cumdata
+            data = np.array(self._rca.cumdata, dtype=np.float32)
             starti = data[:,0].searchsorted( self._req.startt )
             stopi = data[:,0].searchsorted( self._req.stopt )
             data = data[starti:stopi,list(set(self._req.ratlist)|{0})]
-            data[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1
+            data[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1.0
             self._drawData = np.copy(data)
         elif self._req.plotType == 'partsum':
             raise NotImplementedError('Unimplemented plotType'\
@@ -462,7 +462,7 @@ class RotImageRequest(ImageRequest):
         ax.set_xlim(0,xs[-1]+shift+boxWidth+zshift)
         ax.set_xticks(xs + (shift+zshift)/2. + boxWidth/2.)
         fmt = '%d.%m'
-        jtbl = [ time.strftime(fmt, time.gmtime(int(ii))) for ii in data[:,0] ]
+        jtbl = [ time.strftime(fmt, time.localtime(int(ii))) for ii in data[:,0] ]
         ax.set_xticklabels(jtbl)
         # saving
         self._after_drawing(f,pls)
