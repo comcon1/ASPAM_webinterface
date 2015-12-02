@@ -1,0 +1,39 @@
+
+
+ *******************************
+
+    Dear user!
+
+ *******************************
+
+    We are glad that you select our software for usage. Please, read the
+following instructions.
+
+
+
+BUILDING
+
+    No specific builds are required for running the WSGI server and for working
+of libdaq libraries.
+
+
+
+REQUIREMENTS
+
+    Follwing libraries are required:
+    numpy, scipy, cherrypy
+
+    You need to install textreader by hands (it uses instead of slow readtxt
+from numpy library). Please follow installing instructions from the site:
+    https://github.com/WarrenWeckesser/textreader
+
+
+
+SETTING UP
+
+    You should set up path to server directory in server/src/config.py and put
+*.conf files in server directory. Look in testsuite/testserver for working
+examples.
+
+
+
