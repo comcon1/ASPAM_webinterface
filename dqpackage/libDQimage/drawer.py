@@ -140,9 +140,11 @@ class ImageRequest(CurrentCachable):
         if (self._req.startt >= self._req.stopt):
             raise AttributeError('Invalid time boundaries for ImageRequest: %d, %d!' \
                    % (self._req.startt,self._req.stopt) )
-        self._ifn = 'data.png'
+        if not hasattr(self, '_ifn'):
+            self._ifn = 'data.png'
         #TODO: may be other formats?
-        self._cachelist = [ 'data.png' ]
+        if not hasattr(self, '_cachelist'):
+            self._cachelist = [ 'data.png' ]
         #--end TODO
         super(ImageRequest, self).__init__() 
 
@@ -263,6 +265,7 @@ class ImageRequest(CurrentCachable):
         print 'Generating figure..'
         fn = self.getImage()
         fig.savefig(fn,format='png',dpi=92) 
+        # is it really need?
         print 'Saving raw figure data..'
         np.savetxt(os.path.join(self._dir, 'raw.xvg'), self.drawData, fmt='%8d')
 
@@ -509,6 +512,33 @@ class RotImageRequest(ImageRequest):
         # saving
         self._after_drawing(f,pls)
         self._saveData(f)
+
+'''
+    Overriding RotImageRequest behaviour for simply generating CSV instead of an image. 
+#TODO: absolutely need to be transferred to another file!
+'''
+class RotTableRequest(RotImageRequest):
+    
+    def __init__(self, *args, **kwargs):
+        # override file format
+        self._ifn = 'data.csv'
+        self._cachelist = [ 'data.csv' ]
+        # run inherited constructor
+        super(RotTableRequest, self).__init__(*args, **kwargs)
+    
+    def _init_wo_cache(self):
+        data = self.drawData
+        fmt = params.download.csvdtfmt
+
+        fname = self.getImage()
+        print fname
+        f = open(fname, 'w')
+        fmnums = ',%d'*(data.shape[1]-1)
+        for i in range(data.shape[0]):
+            f.write(time.strftime(fmt, time.localtime(data[i,0])) + \
+                (fmnums % tuple(data[i,1:])) + '\n')
+        f.close()
+
 
 
 class RotImageDownload(RotImageRequest):

@@ -117,6 +117,9 @@ class ExperimentReview(Page):
         self._tmpl.sub('download_simplot_png', '/expreview/download'+mkGetRequest(code=code, ratlist=','.join(map(str,__ratlist)), \
             scale=scale, yunits=yunits, fromdate=_fromdate, tilldate=_tilldate, imgtyp='raw', fmt='png') )
         
+        self._tmpl.sub('download_simplot_raw', '/expreview/csv'+mkGetRequest(code=code, ratlist=','.join(map(str,__ratlist)), \
+            yunits=yunits, fromdate=_fromdate, tilldate=_tilldate) )        
+        
         return self._tmpl.string
     
     index.exposed = True
@@ -153,7 +156,52 @@ class ExperimentReview(Page):
         return static.serve_file(path, "application/x-download",
                                  "attachment", os.path.basename(path))
 
-        
         return self._tmpl.string
     
     download.exposed = True
+    
+    def csv(self, code=None, ratlist=None, yunits='meters', regen_cache=True,
+              fromdate=None, tilldate=None):
+        
+        if code is None:
+            return 'Specify code!'
+        self._ex = Experiment(os.path.join(self._edir, code))
+        
+        if (ratlist is not None):
+            self._selected_rats = dict.fromkeys(range(1, self._ex.nrats+1), False)
+            for i in map(int, ratlist.split(',')):
+                self._selected_rats[i] = True
+        else:
+            self._selected_rats = dict.fromkeys(range(1, self._ex.nrats+1), True)
+        __ratlist = [k for k,v in self._selected_rats.iteritems() if v]
+        
+        command = os.path.join(os.path.dirname(__file__), 'csv_loader.py')
+        command += ' -d '+ self._ex._dir
+        command += ' -i '+ 'data00.xvg'
+        if fromdate is not None:
+            command += ' -f '+ fromdate
+        if tilldate is not None:
+            command += ' -t '+ tilldate
+        if regen_cache:
+            command += ' -u'
+        command += ' -r' + ','.join(map(str,__ratlist))
+        command += ' -y ' + yunits
+
+        print command
+        resultfile = None
+        pp = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+        output,err = pp.communicate()
+        for lin in output.split('\n'):
+            m0 = re.match(r'^CSV_PATH\:(.+)$', lin)
+            if m0 is not None:
+                resultfile = m0.group(1)
+                continue
+
+        if resultfile is None:
+            raise(RuntimeError, 'Error in execution of csv_loader!')
+        print resultfile
+
+        return static.serve_file(resultfile, "application/x-download",
+                                 "attachment", os.path.basename(resultfile))
+
+    csv.exposed = True    

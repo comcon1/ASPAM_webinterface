@@ -35,6 +35,7 @@ class ExperimentsBlock(Page):
         self._tmpl.sub('STOP_LINK', '/action'+mkGetRequest(action='chstate_experiment', after_action='/index', code=exp, newstate=0))
         self._tmpl.sub('PAUSE_LINK', '/action'+mkGetRequest(action='chstate_experiment', after_action='/index', code=exp, newstate=1))
         self._tmpl.sub('START_LINK', '/action'+mkGetRequest(action='chstate_experiment', after_action='/index', code=exp, newstate=2))
+        self._tmpl.sub('FCSV_LINK', '/expreview/csv'+mkGetRequest(code=exp,yunits=params.download.defcsvunits))
         return self._tmpl.string
 
 class IndexPage(Page):
