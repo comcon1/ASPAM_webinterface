@@ -216,7 +216,7 @@ class ImageRequest(CurrentCachable):
             print 'Timerange: %d - %d' % (self._req.startt, self._req.stopt)
             data = data[starti:stopi]
             print 'Data selected: %d lines' % data.shape[0]
-            self._drawData = np.array(data.tolist(), dtype=np.float32)
+            self._drawData = np.array(data.tolist(), dtype=np.float64)
             print 'Rats selected: ',  list(set(self._req.ratlist) | {0})
             self._drawData = self._drawData[:, list(set(self._req.ratlist) | {0})]
             self._drawData[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1
@@ -368,7 +368,7 @@ class RotImageRequest(ImageRequest):
         if self._req.plotType == 'raw':
             return super(RotImageRequest, self).drawData
         elif self._req.plotType == 'cumulative':
-            data = np.array(self._rca.cumdata, dtype=np.float32)
+            data = np.array(self._rca.cumdata, dtype=np.float64)
             starti = data[:,0].searchsorted( self._req.startt )
             stopi = data[:,0].searchsorted( self._req.stopt )
             data = data[starti:stopi,list(set(self._req.ratlist)|{0})]
