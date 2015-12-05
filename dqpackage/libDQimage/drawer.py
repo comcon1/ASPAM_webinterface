@@ -533,7 +533,10 @@ class RotTableRequest(RotImageRequest):
         fname = self.getImage()
         print fname
         f = open(fname, 'w')
-        fmnums = ',%d'*(data.shape[1]-1)
+        if self._req.Yunits == 'turns':
+            fmnums = ',%d'*(data.shape[1]-1)
+        elif self._req.Yunits == 'meters':
+            fmnums = ',%.3f'*(data.shape[1]-1)
         for i in range(data.shape[0]):
             f.write(time.strftime(fmt, time.localtime(data[i,0])) + \
                 (fmnums % tuple(data[i,1:])) + '\n')
