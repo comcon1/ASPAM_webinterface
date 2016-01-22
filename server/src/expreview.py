@@ -51,6 +51,7 @@ class ExperimentReview(Page):
 
         pp = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
         output,err = pp.communicate()
+        oo = open(DQGENLOG, 'w+')
         for lin in output.split('\n'):
             m0 = re.match(r'^RESULT_BT\:\s*([0-9]+)\s*$', lin)
             if m0 is not None:
@@ -64,6 +65,8 @@ class ExperimentReview(Page):
             if m0 is not None:
                 raw_image = m0.group(1)
                 continue
+            oo.write(lin+'\n')
+        oo.close()
 
         command = os.path.join(os.path.dirname(__file__), 'image_loader.py')
         command += ' -x expreview_cumulative'
@@ -84,6 +87,7 @@ class ExperimentReview(Page):
 
         pp = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
         output,err = pp.communicate()
+        oo = open(DQGENLOG, 'w+')
         for lin in output.split('\n'):
             m0 = re.match(r'^RESULT_BT\:\s*([0-9]+)\s*$', lin)
             if m0 is not None:
@@ -97,6 +101,8 @@ class ExperimentReview(Page):
             if m0 is not None:
                 cum_image = m0.group(1)
                 continue
+            oo.write(lin+'\n')
+        oo.close()
         
         _fromdate = dq.tu.lower_day(result_bt) if fromdate == None else int(fromdate)
         _tilldate = dq.tu.lower_day(result_et) if tilldate == None else int(tilldate)
@@ -191,11 +197,14 @@ class ExperimentReview(Page):
         resultfile = None
         pp = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
         output,err = pp.communicate()
+        oo = open(DQGENLOG, 'w+')
         for lin in output.split('\n'):
             m0 = re.match(r'^CSV_PATH\:(.+)$', lin)
             if m0 is not None:
                 resultfile = m0.group(1)
                 continue
+            oo.write(lin+'\n')
+        oo.close()
 
         if resultfile is None:
             raise(RuntimeError, 'Error in execution of csv_loader!')

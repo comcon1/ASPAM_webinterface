@@ -176,7 +176,10 @@ class ImageRequest(CurrentCachable):
                         zers.append(t.index(tt))
                 while len(zers):
                     t.pop(zers.pop())
-            l = [ time.strftime('%H', time.localtime(int(ii))) for ii in t ]
+            if len(t) > 4*self._req.figsize[0]:
+                l = ['']*len(t)
+            else:
+                l = [ time.strftime('%H', time.localtime(int(ii))) for ii in t ]
         elif precis[0] == 'd':
             if precis[1] == 'c': # at the center of a day
                 gm_1day = tmu.upper_day(ta[0]) 
@@ -189,7 +192,12 @@ class ImageRequest(CurrentCachable):
                 AttributeError('Precise code %s is incorrect' % precis)
             print 'Building day ticks from ts.%d to ts.%d' % (ta[0], ta[-1])
             print 'First tick: %d' % gm_1day
-            t = map(int,list(frange(gm_1day, ta[-1],(3600*24))))
+            skip_days = 1
+            while (ta[-1]-gm_1day)/3600./24./skip_days > self._req.figsize[0]:
+                skip_days += 1
+                #TODO: and something more curious!
+            print 'DAYS skipping: %d days at %d inches' %  (skip_days, self._req.figsize[0])
+            t = map(int,list(frange(gm_1day, ta[-1],(3600*24*skip_days))))
             if len(t) > 0:
                 if t[-1] > ta[-1]:
                     t.pop()
@@ -209,6 +217,7 @@ class ImageRequest(CurrentCachable):
         ''' All drawable array --- in simple format '''
         if self._drawData is None:
             data = self._ldr.getPartT( self._req.startt  )
+            
             print 'Data loaded: %d lines' % data.shape[0]
             #TODO: concatenate if draw through several parts
             starti = data['t'].searchsorted( self._req.startt )
@@ -366,7 +375,12 @@ class RotImageRequest(ImageRequest):
         if self._drawData is not None:
             return self._drawData
         if self._req.plotType == 'raw':
-            return super(RotImageRequest, self).drawData
+            data = np.array(self._rca.rawdata, dtype=np.float64)
+            starti = data[:,0].searchsorted( self._req.startt )
+            stopi = data[:,0].searchsorted( self._req.stopt )
+            data = data[starti:stopi,list(set(self._req.ratlist)|{0})]
+            data[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1.0
+            self._drawData = np.copy(data)
         elif self._req.plotType == 'cumulative':
             data = np.array(self._rca.cumdata, dtype=np.float64)
             starti = data[:,0].searchsorted( self._req.startt )
