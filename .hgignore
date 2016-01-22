@@ -6,7 +6,7 @@ testsuite/patterns/test.*
 daqsoft*
 .spyder*
 testsuite/testserver/*.conf
-testsuite/testserver/expdata/test14nov
+testsuite/testserver/expdata/*
 
 syntax: regexp
 
