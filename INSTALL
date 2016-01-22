@@ -21,7 +21,7 @@ of libdaq libraries.
 REQUIREMENTS
 
     Follwing libraries are required:
-    numpy, scipy, cherrypy
+    numpy, scipy, cherrypy, matplotlib-1.5, iniparse, libxml2
 
     You need to install textreader by hands (it uses instead of slow readtxt
 from numpy library). Please follow installing instructions from the site:
