@@ -19,6 +19,8 @@ class ExperimentsBlock(Page):
         exps = os.listdir(self._edir)
         ol = []
         for exp in exps:
+            if not os.path.isdir(os.path.join(self._edir,exp)):
+                continue
             ol.append( self._one(exp) )
         return '\n'.join(ol)
         
