@@ -215,6 +215,8 @@ class ImageRequest(CurrentCachable):
     @property
     def drawData(self):
         ''' All drawable array --- in simple format '''
+        reqrl = list({0}|set(self._req.ratlist))
+        reqrl.sort()
         if self._drawData is None:
             data = self._ldr.getPartT( self._req.startt  )
             
@@ -226,8 +228,8 @@ class ImageRequest(CurrentCachable):
             data = data[starti:stopi]
             print 'Data selected: %d lines' % data.shape[0]
             self._drawData = np.array(data.tolist(), dtype=np.float64)
-            print 'Rats selected: ',  list(set(self._req.ratlist) | {0})
-            self._drawData = self._drawData[:, list(set(self._req.ratlist) | {0})]
+            print 'Rats selected: ',  reqrl
+            self._drawData = self._drawData[:, reqrl]
             self._drawData[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1
         return self._drawData
 
@@ -372,20 +374,22 @@ class RotImageRequest(ImageRequest):
     @property
     def drawData(self):
         ''' All drawable array --- in simple format '''
+        reqrl = list({0}|set(self._req.ratlist))
+        reqrl.sort()
         if self._drawData is not None:
             return self._drawData
         if self._req.plotType == 'raw':
             data = np.array(self._rca.rawdata, dtype=np.float64)
             starti = data[:,0].searchsorted( self._req.startt )
             stopi = data[:,0].searchsorted( self._req.stopt )
-            data = data[starti:stopi,list(set(self._req.ratlist)|{0})]
+            data = data[starti:stopi,reqrl]
             data[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1.0
             self._drawData = np.copy(data)
         elif self._req.plotType == 'cumulative':
             data = np.array(self._rca.cumdata, dtype=np.float64)
             starti = data[:,0].searchsorted( self._req.startt )
             stopi = data[:,0].searchsorted( self._req.stopt )
-            data = data[starti:stopi,list(set(self._req.ratlist)|{0})]
+            data = data[starti:stopi,reqrl]
             data[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1.0
             self._drawData = np.copy(data)
         elif self._req.plotType == 'partsum':
@@ -395,9 +399,9 @@ class RotImageRequest(ImageRequest):
             day,light,night = self._rca.getDayNightData(self._req.tintervals[0], \
                 self._req.tintervals[1], self._req.tintervals[2], self._req.startt, \
                 self._req.stopt)
-            day = day[:,list(set(self._req.ratlist)|{0})]
-            light = light[:,list(set(self._req.ratlist)|{0})]
-            night = night[:,list(set(self._req.ratlist)|{0})]
+            day = day[:,reqrl]
+            light = light[:,reqrl]
+            night = night[:,reqrl]
             # time, DAY mean, std, LIGHT mean, std, NIGHT mean std
             #TODO: make correct 1-tailed quantile
             dd = np.zeros((day.shape[0],7))
@@ -414,9 +418,9 @@ class RotImageRequest(ImageRequest):
             day,light,night = self._rca.getDayNightData(self._req.tintervals[0], \
                 self._req.tintervals[1], self._req.tintervals[2], self._req.startt, \
                 self._req.stopt)
-            day = day[:,list(set(self._req.ratlist)|{0})]
-            light = light[:,list(set(self._req.ratlist)|{0})]
-            night = night[:,list(set(self._req.ratlist)|{0})]
+            day = day[:,reqrl]
+            light = light[:,reqrl]
+            night = night[:,reqrl]
             # time, DAY mean, std, LIGHT mean, std, NIGHT mean std
             #TODO: make correct 1-tailed quantile
             dd = np.zeros((len(self._req.ratlist),4))
