@@ -140,6 +140,54 @@ class RotCurveAnalyzer(RawCurveAnalyzer):
         return resday, resli, resni
 
 
+    def getFullDayNightData(self, daystart, morning, evening, startut, stoput):
+        '''Generate array of sums over days, daytimes and nights. ``start'' and 
+        ``stop'' have the same meaning as in getData() method. Returns arrays
+        for every rat with partial sums (days, lights, nights). '''
+        data = self.getData(startut, stoput, raw=True)
+        print 'DDDDDDDD', data.shape
+        days = tmu.form_periodic_days(daystart, startut, stoput)
+        # collect daylight data
+        light_mask = np.zeros(data.shape[0], dtype=np.int8)
+        try:
+            daylight = tmu.form_inday_intervals(morning, evening, days)
+            for a,b in daylight:
+                light_mask[data[:,0].searchsorted(a):data[:,0].searchsorted(b)].fill(1)
+        except AttributeError as e:
+            print '** ATTENTION ** ' + str(e)
+        # collect night data
+        night_mask = np.zeros(data.shape[0], dtype=np.int8)
+        try:
+            daynight = tmu.form_inday_intervals(evening, morning, days)
+            for a,b in daynight:
+                night_mask[data[:,0].searchsorted(a):data[:,0].searchsorted(b)].fill(1)
+        except AttributeError as e:
+            print '** ATTENTION ** ' + str(e)
+        
+        resday = np.zeros((len(days),data.shape[1]))
+        resday[:,0] = [ tmu.lower_day(i) for i,j in days ]
+        resni = np.copy(resday)
+        resli = np.copy(resday)
+        i = 0
+        for a,b in days:
+            i0,i1 = data[:,0].searchsorted(a), data[:,0].searchsorted(b)
+            print 'NIGHT MINUTES', night_mask[i0:i1].sum()
+            _da = np.sum(data[i0:i1,1:], axis=0)
+            print 'TOTAL DAY', _da
+            _ni = np.sum(data[i0:i1,1:] * \
+                np.vstack([night_mask[i0:i1]]*(data.shape[1]-1)).T, \
+                axis=0)
+            _li = np.sum(data[i0:i1,1:] * \
+                np.vstack([light_mask[i0:i1]]*(data.shape[1]-1)).T, \
+                axis=0)
+            resday[i,1:] = _da
+            resni[i,1:] = _ni
+            resli[i,1:] = _li
+            i+=1
+        
+        return days, daylight, daynight, resday, resli, resni
+
+
     def getData(self, start, stop, raw=False):
         '''Use -1 for start for the beginning and -1 for stop at the very
         end. raw=True for using simple rectangle matrix format for output.'''
