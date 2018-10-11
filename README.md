@@ -1,7 +1,7 @@
 # Webinterface for ASPAM project
 
-The project contains Web interface submodule for ASPAM 
-or related applications.
+The project contains Web interface submodule for ASPAM
+(https://github.com/comcon1/ASPAM) or related applications.
 
 This repository contains four main logical parts:
 
@@ -17,6 +17,6 @@ This library is used by Web-interface to separate day and night run.
 
 # Licensing
 
-ASPAM\_webinterface is *not* the part of ASPAM project. It is  
-released independently under BSD "3-clause" license.
+ASPAM\_webinterface is *not* the part of ASPAM project. 
+It is released independently under BSD "3-clause" license.
 
