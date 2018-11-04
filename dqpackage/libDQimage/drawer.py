@@ -140,9 +140,11 @@ class ImageRequest(CurrentCachable):
         if (self._req.startt >= self._req.stopt):
             raise AttributeError('Invalid time boundaries for ImageRequest: %d, %d!' \
                    % (self._req.startt,self._req.stopt) )
-        self._ifn = 'data.png'
+        if not hasattr(self, '_ifn'):
+            self._ifn = 'data.png'
         #TODO: may be other formats?
-        self._cachelist = [ 'data.png' ]
+        if not hasattr(self, '_cachelist'):
+            self._cachelist = [ 'data.png' ]
         #--end TODO
         super(ImageRequest, self).__init__() 
 
@@ -170,11 +172,14 @@ class ImageRequest(CurrentCachable):
             if precis[1] == '0':
                 zers = []
                 for tt in t:
-                    if time.gmtime(tt).tm_hour == 0:
+                    if time.localtime(tt).tm_hour == 0:
                         zers.append(t.index(tt))
                 while len(zers):
                     t.pop(zers.pop())
-            l = [ time.strftime('%H', time.gmtime(int(ii))) for ii in t ]
+            if len(t) > 4*self._req.figsize[0]:
+                l = ['']*len(t)
+            else:
+                l = [ time.strftime('%H', time.localtime(int(ii))) for ii in t ]
         elif precis[0] == 'd':
             if precis[1] == 'c': # at the center of a day
                 gm_1day = tmu.upper_day(ta[0]) 
@@ -187,16 +192,21 @@ class ImageRequest(CurrentCachable):
                 AttributeError('Precise code %s is incorrect' % precis)
             print 'Building day ticks from ts.%d to ts.%d' % (ta[0], ta[-1])
             print 'First tick: %d' % gm_1day
-            t = map(int,list(frange(gm_1day, ta[-1],(3600*24))))
+            skip_days = 1
+            while (ta[-1]-gm_1day)/3600./24./skip_days > self._req.figsize[0]:
+                skip_days += 1
+                #TODO: and something more curious!
+            print 'DAYS skipping: %d days at %d inches' %  (skip_days, self._req.figsize[0])
+            t = map(int,list(frange(gm_1day, ta[-1],(3600*24*skip_days))))
             if len(t) > 0:
                 if t[-1] > ta[-1]:
                     t.pop()
-                l = [ time.strftime(fmt, time.gmtime(int(ii))) for ii in t ]
+                l = [ time.strftime(fmt, time.localtime(int(ii))) for ii in t ]
                 print t,l
             else:
                 # at least one tick :-)
                 t = [ (ta[0]+ta[1]) / 2. ]
-                l = [ time.strftime(fmt, time.gmtime(ta[0]) ) ]
+                l = [ time.strftime(fmt, time.localtime(ta[0]) ) ]
         else:
             raise NotImplementedError('Precis type ``%s'' not implemented' \
                     % precis)
@@ -205,8 +215,11 @@ class ImageRequest(CurrentCachable):
     @property
     def drawData(self):
         ''' All drawable array --- in simple format '''
+        reqrl = list({0}|set(self._req.ratlist))
+        reqrl.sort()
         if self._drawData is None:
             data = self._ldr.getPartT( self._req.startt  )
+            
             print 'Data loaded: %d lines' % data.shape[0]
             #TODO: concatenate if draw through several parts
             starti = data['t'].searchsorted( self._req.startt )
@@ -214,9 +227,9 @@ class ImageRequest(CurrentCachable):
             print 'Timerange: %d - %d' % (self._req.startt, self._req.stopt)
             data = data[starti:stopi]
             print 'Data selected: %d lines' % data.shape[0]
-            self._drawData = np.array(data.tolist(), dtype=np.int64)
-            print 'Rats selected: ',  list(set(self._req.ratlist) | {0})
-            self._drawData = self._drawData[:, list(set(self._req.ratlist) | {0})]
+            self._drawData = np.array(data.tolist(), dtype=np.float64)
+            print 'Rats selected: ',  reqrl
+            self._drawData = self._drawData[:, reqrl]
             self._drawData[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1
         return self._drawData
 
@@ -263,6 +276,7 @@ class ImageRequest(CurrentCachable):
         print 'Generating figure..'
         fn = self.getImage()
         fig.savefig(fn,format='png',dpi=92) 
+        # is it really need?
         print 'Saving raw figure data..'
         np.savetxt(os.path.join(self._dir, 'raw.xvg'), self.drawData, fmt='%8d')
 
@@ -360,16 +374,23 @@ class RotImageRequest(ImageRequest):
     @property
     def drawData(self):
         ''' All drawable array --- in simple format '''
+        reqrl = list({0}|set(self._req.ratlist))
+        reqrl.sort()
         if self._drawData is not None:
             return self._drawData
         if self._req.plotType == 'raw':
-            return super(RotImageRequest, self).drawData
-        elif self._req.plotType == 'cumulative':
-            data = self._rca.cumdata
+            data = np.array(self._rca.rawdata, dtype=np.float64)
             starti = data[:,0].searchsorted( self._req.startt )
             stopi = data[:,0].searchsorted( self._req.stopt )
-            data = data[starti:stopi,list(set(self._req.ratlist)|{0})]
-            data[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1
+            data = data[starti:stopi,reqrl]
+            data[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1.0
+            self._drawData = np.copy(data)
+        elif self._req.plotType == 'cumulative':
+            data = np.array(self._rca.cumdata, dtype=np.float64)
+            starti = data[:,0].searchsorted( self._req.startt )
+            stopi = data[:,0].searchsorted( self._req.stopt )
+            data = data[starti:stopi,reqrl]
+            data[:,1:] *= float(params.root.turnstometers) if self._req.Yunits == 'meters' else 1.0
             self._drawData = np.copy(data)
         elif self._req.plotType == 'partsum':
             raise NotImplementedError('Unimplemented plotType'\
@@ -378,9 +399,9 @@ class RotImageRequest(ImageRequest):
             day,light,night = self._rca.getDayNightData(self._req.tintervals[0], \
                 self._req.tintervals[1], self._req.tintervals[2], self._req.startt, \
                 self._req.stopt)
-            day = day[:,list(set(self._req.ratlist)|{0})]
-            light = light[:,list(set(self._req.ratlist)|{0})]
-            night = night[:,list(set(self._req.ratlist)|{0})]
+            day = day[:,reqrl]
+            light = light[:,reqrl]
+            night = night[:,reqrl]
             # time, DAY mean, std, LIGHT mean, std, NIGHT mean std
             #TODO: make correct 1-tailed quantile
             dd = np.zeros((day.shape[0],7))
@@ -397,9 +418,9 @@ class RotImageRequest(ImageRequest):
             day,light,night = self._rca.getDayNightData(self._req.tintervals[0], \
                 self._req.tintervals[1], self._req.tintervals[2], self._req.startt, \
                 self._req.stopt)
-            day = day[:,list(set(self._req.ratlist)|{0})]
-            light = light[:,list(set(self._req.ratlist)|{0})]
-            night = night[:,list(set(self._req.ratlist)|{0})]
+            day = day[:,reqrl]
+            light = light[:,reqrl]
+            night = night[:,reqrl]
             # time, DAY mean, std, LIGHT mean, std, NIGHT mean std
             #TODO: make correct 1-tailed quantile
             dd = np.zeros((len(self._req.ratlist),4))
@@ -462,7 +483,7 @@ class RotImageRequest(ImageRequest):
         ax.set_xlim(0,xs[-1]+shift+boxWidth+zshift)
         ax.set_xticks(xs + (shift+zshift)/2. + boxWidth/2.)
         fmt = '%d.%m'
-        jtbl = [ time.strftime(fmt, time.gmtime(int(ii))) for ii in data[:,0] ]
+        jtbl = [ time.strftime(fmt, time.localtime(int(ii))) for ii in data[:,0] ]
         ax.set_xticklabels(jtbl)
         # saving
         self._after_drawing(f,pls)
@@ -509,6 +530,36 @@ class RotImageRequest(ImageRequest):
         # saving
         self._after_drawing(f,pls)
         self._saveData(f)
+
+'''
+    Overriding RotImageRequest behaviour for simply generating CSV instead of an image. 
+#TODO: absolutely need to be transferred to another file!
+'''
+class RotTableRequest(RotImageRequest):
+    
+    def __init__(self, *args, **kwargs):
+        # override file format
+        self._ifn = 'data.csv'
+        self._cachelist = [ 'data.csv' ]
+        # run inherited constructor
+        super(RotTableRequest, self).__init__(*args, **kwargs)
+    
+    def _init_wo_cache(self):
+        data = self.drawData
+        fmt = params.download.csvdtfmt
+
+        fname = self.getImage()
+        print fname
+        f = open(fname, 'w')
+        if self._req.Yunits == 'turns':
+            fmnums = ',%d'*(data.shape[1]-1)
+        elif self._req.Yunits == 'meters':
+            fmnums = ',%.3f'*(data.shape[1]-1)
+        for i in range(data.shape[0]):
+            f.write(time.strftime(fmt, time.localtime(data[i,0])) + \
+                (fmnums % tuple(data[i,1:])) + '\n')
+        f.close()
+
 
 
 class RotImageDownload(RotImageRequest):

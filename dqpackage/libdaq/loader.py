@@ -32,10 +32,11 @@ import numpy as np
 from matplotlib.mlab import movavg
 import os,re
 import os.path
-import md5
+import md5,sys
 import pickle
 from StringIO import StringIO
 from core import CurrentCachable
+import textreader as tx
 
 from . import _workingDir
 
@@ -192,7 +193,7 @@ during this run.
         f.close()
 
     def _partionateAll(self):
-        f = open(self._apath)
+        f = open(self._apath, 'r')
         # skipt commented header
         if self._p.zshift == -1:
             l = '#'
@@ -212,49 +213,64 @@ during this run.
 File ``%s'' is opened.
 Raw data begins from byte #%d. ''' % \
         ( self._apath, self._p.zshift )
-            
-        p0 = StringIO(f.read((self._p.bfsz+self._p.bfin)*self._p.strs))
-        a0 = np.loadtxt(p0, dtype=self._p.dtp)
+        numlines = (self._p.bfsz+self._p.bfin)
+        # p0 = StringIO(f.read(s))
+        f.seek(numlines*self._p.strs,0)
+        # a0 = np.loadtxt(p0, dtype=self._p.dtp)
+        print 'tx loading..',
+        sys.stdout.flush()
+        a0 = tx.readrows(self._apath,  self._p.dtp, numrows=numlines)
+        print 'OK'
         np.save(os.path.join(self._dir, 'part0.npy'), a0)
         # is file longer than first buffer/
         if (a0.shape[0] == self._p.bfsz+self._p.bfin):
             # for a long file
             self._p.addPortion(0, self._p.bfsz+self._p.bfin, a0['t'][0], \
                     a0['t'][-1], os.path.join(self._dir, 'part0.npy'))
-            del a0; del p0
+            del a0
             cc = 0
             while os.stat(self._apath).st_size - self._p.zshift - f.tell() >\
                     self._p.bfsz*self._p.strs:
                 cc += 1
                 f.seek(-self._p.bfin*self._p.strs, 1)
                 curbline = (f.tell()-self._p.zshift) / self._p.strs
-                p0 = StringIO(f.read((self._p.bfsz+2*self._p.bfin)*self._p.strs))
-                a0 = np.loadtxt(p0, dtype=self._p.dtp)
+                numlines = (self._p.bfsz+2*self._p.bfin)
+                #p0 = StringIO(f.read(numlines*self._p.strs))
+                f.seek(numlines*self._p.strs,1)
+                #a0 = np.loadtxt(p0, dtype=self._p.dtp)
+                print 'tx loading..',
+                sys.stdout.flush()
+                a0 = tx.readrows(self._apath,  self._p.dtp, skiprows=curbline, numrows=numlines)
+                print 'OK'
                 fnm = os.path.join(self._dir, 'part%d.npy' % (cc))
                 self._p.addPortion(curbline, curbline + a0.shape[0], a0['t'][0], \
                     a0['t'][-1],fnm)
                 np.save(fnm, a0)
-                del a0; del p0
+                del a0
             cc += 1
             f.seek(-self._p.bfin*self._p.strs, 1)
             fnm = os.path.join(self._dir, 'part%d.npy' % (cc))
             curbline = (f.tell()-self._p.zshift) / self._p.strs
             # protect from reading non-full line. Reading integer count of lines.
-            p0 = StringIO(f.read( ( ( os.stat(self._apath).st_size - self._p.zshift - f.tell() ) /
-                self._p.strs ) * self._p.strs ))
-            a0 = np.loadtxt(p0, dtype=self._p.dtp)
+            numlines = ( os.stat(self._apath).st_size - self._p.zshift - f.tell() ) / self._p.strs 
+            #p0 = StringIO(f.read( numlines * self._p.strs ))
+            #a0 = np.loadtxt(p0, dtype=self._p.dtp)
+            print 'tx loading..',
+            sys.stdout.flush()
+            a0 = tx.readrows(self._apath,  self._p.dtp, skiprows=curbline, numrows=numlines)
+            print 'OK'
             # update information about last processed byte
             self._p.lastfsz = ( curbline + a0.shape[0])*self._p.strs 
             self._p.addPortion(curbline, curbline + a0.shape[0], a0['t'][0], \
                     a0['t'][-1],fnm)
             np.save(fnm, a0)
-            del a0; del p0
+            del a0
         else:
             # for a short file. Adding the ONLY portion :)
             self._p.addPortion(0, a0.shape[0], a0['t'][0], \
                     a0['t'][-1], os.path.join(self._dir, 'part0.npy'))
             self._p.lastfsz = self._p.zshift + a0.shape[0]*self._p.strs
-            del a0; del p0;
+            del a0
 
         f = open(os.path.join(self._dir, '_ldrparams'), 'w')
         pickle.dump(self._p, f, 2)
@@ -263,6 +279,7 @@ Raw data begins from byte #%d. ''' % \
         self._recalcParts = range( 0, len(self._p.portions) )
     
     def _continuePartionate(self):
+        print 'cprt0'
         f = open(self._apath)
         f.seek(self._p.zshift + (self._p.portions[-1]['b']+self._p.bfin) * self._p.strs )
         self._p.portions.pop()
@@ -272,34 +289,54 @@ Raw data begins from byte #%d. ''' % \
             cc += 1
             f.seek(-self._p.bfin*self._p.strs, 1)
             curbline = (f.tell()-self._p.zshift) / self._p.strs
-            p0 = StringIO(f.read((self._p.bfsz+2*self._p.bfin)*self._p.strs))
-            a0 = np.loadtxt(p0, dtype=self._p.dtp)
+            numlines = self._p.bfsz+2*self._p.bfin
+            f.seek(numlines*self._p.strs, 1)
+            # p0 = StringIO(f.read(numlines*self._p.strs))
+            print 'tx loading..',
+            sys.stdout.flush()
+            #todo: replace with tx
+            # a0 = np.loadtxt(p0, dtype=self._p.dtp)
+            a0 = tx.readrows(self._apath,  self._p.dtp, skiprows=curbline, numrows=numlines)
+            print 'OK'
             print a0.shape
             fnm = os.path.join(self._dir, 'part%d.npy' % (cc))
             self._p.addPortion(curbline, curbline + a0.shape[0], a0['t'][0], \
                 a0['t'][-1],fnm)
             np.save(fnm, a0)
-            del a0; del p0
+            del a0
         cc += 1
         f.seek(-self._p.bfin*self._p.strs, 1)
         fnm = os.path.join(self._dir, 'part%d.npy' % (cc))
         curbline = (f.tell()-self._p.zshift) / self._p.strs
         # protect from reading non-full line. Reading integer count of lines.
-        p0 = StringIO(f.read( ( ( os.stat(self._apath).st_size - self._p.zshift - f.tell() ) /
-            self._p.strs ) * self._p.strs ))
-        a0 = np.loadtxt(p0, dtype=self._p.dtp)
+        print 'loading strio..',
+        sys.stdout.flush()
+        numlines = ( ( os.stat(self._apath).st_size - self._p.zshift - f.tell() ) /
+            self._p.strs )
+        # p0 = StringIO(f.read( numlines * self._p.strs ))
+        f.seek(numlines * self._p.strs, 1) # skip instead of reading
+        print 'SKIP'
+        print 'tx.readrows from file..',
+        sys.stdout.flush()
+        a0 = tx.readrows(self._apath,  self._p.dtp, skiprows=curbline, numrows=numlines)
+        #a0 = np.loadtxt(p0, dtype=self._p.dtp)
+        print 'OK'
         # update information about last processed byte
         self._p.lastfsz = ( curbline + a0.shape[0])*self._p.strs 
         self._p.addPortion(curbline, curbline + a0.shape[0], a0['t'][0], \
                 a0['t'][-1],fnm)
+        print 'saving..',
+        sys.stdout.flush()
         np.save(fnm, a0)
-        del a0; del p0
+        print 'OK'
+        del a0
         
         f = open(os.path.join(self._dir, '_ldrparams'), 'w')
         pickle.dump(self._p, f, 2)
         f.close()
 
         self._recalcParts = range( ncp, len(self._p.portions) )
+        print 'cprt1'
 
     def _init_wo_cache(self):
         self._p = LDRParams()

@@ -17,6 +17,7 @@ DQSROOTDIR = os.path.join(os.path.dirname(__file__), \
     '../../testsuite/testserver/')
 DQSERVROOT = os.path.join(os.path.dirname(__file__), '..', 'daq')
 DQEXPDATADIR = os.path.join(DQSROOTDIR, 'expdata')
+DQGENLOG = os.path.join(DQEXPDATADIR, 'dqgen.log')
 
 from iniparse.config import BasicConfig
 

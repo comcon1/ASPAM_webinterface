@@ -18,6 +18,8 @@ curves.r13.color = #999999
 curves.r14.color = #9900ff
 
 download.legendwidth = 1.5
+download.csvdtfmt = %d.%m.%y %H:%M:%S
+download.defcsvunits = meters
 
 default.experiment.daystart = 9:00
 default.experiment.morning = 9:00

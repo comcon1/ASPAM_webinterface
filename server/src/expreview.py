@@ -10,6 +10,7 @@ from servutils import *
 from experiment import Experiment
 import cherrypy
 from cherrypy.lib import static
+import shlex, subprocess, re
 
 class ExperimentReview(Page):
 
@@ -17,7 +18,7 @@ class ExperimentReview(Page):
         super(ExperimentReview, self).__init__(os.path.join(DQTEMPLDIR,'expreview.xml')) 
     
     def index(self, code=None, ratlist=None, nrats=None, scale='5:3', yunits='meters',
-              regen_cache=False, fromdate=None, tilldate=None):
+              regen_cache=False, fromdate=None, tilldate=None, fastpreview=False):
         
         if code is None:
             return 'Specify code!'
@@ -29,37 +30,82 @@ class ExperimentReview(Page):
                 self._selected_rats[i] = True
         else:
             self._selected_rats = dict.fromkeys(range(1, self._ex.nrats+1), True)
-        try:
-            rca = dq.RotCurveAnalyzer(os.path.join(self._ex._dir,'data00.xvg'))
-            ip0 = qi.RotImageParameters(rca.loader)    
-        except Exception as e:
-            return self.errorPage(e)
-            
-        
-        print 'Data was recorded in diapazone: %d-%d' % (ip0.bt, ip0.et)
-        self._fromdate = dq.tu.lower_day(ip0.bt) if fromdate is None else int(fromdate)
-        self._tilldate = dq.tu.lower_day(ip0.et) if tilldate is None else int(tilldate)
-        
-        ip0.setDiapT(self._fromdate, self._tilldate+24*3600)
-        print 'Requesting image for data in range %d-%d' % (self._fromdate, self._tilldate+24*3600)
-        print 'Frame range: %d-%d:%d' % (ip0.startt, ip0.stopt, ip0._tstep)
-
-        ip0.setFigSize(tuple(map(float,scale.split(':'))))
         __ratlist = [k for k,v in self._selected_rats.iteritems() if v]
-
-        ip0.setRatList(__ratlist)
-        ip0.Yunits = yunits
-        if regen_cache:
-            ip0.setRegen()
         
-        try: 
-            ip0.plotType = 'raw'        
-            ir0 = qi.RotImageRequest(rca, ip0)
-            ip0.plotType = 'cumulative'
-            ir1 = qi.RotImageRequest(rca, ip0)
-        except Exception as e:
-            print '******** ERROR DURING REQUEST OF PICTURE PREPARATION!! *********'
-            return self.errorPage(e)
+        command = os.path.join(os.path.dirname(__file__), 'image_loader.py')
+        command += ' -x expreview_raw'
+        command += ' -d '+ self._ex._dir
+        command += ' -i '+ 'data00.xvg'
+        if fromdate is not None:
+            command += ' -f '+ fromdate
+        if tilldate is not None:
+            command += ' -t '+ tilldate
+        if regen_cache:
+            command += ' -u'
+        command += ' -s '+ scale
+        command += ' -r' + ','.join(map(str,__ratlist))
+        command += ' -y ' + yunits
+        if fastpreview:
+            command += ' -p '
+        print command
+
+        pp = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+        output,err = pp.communicate()
+        oo = open(DQGENLOG, 'w+')
+        for lin in output.split('\n'):
+            m0 = re.match(r'^RESULT_BT\:\s*([0-9]+)\s*$', lin)
+            if m0 is not None:
+                result_bt = int(m0.group(1))
+                continue
+            m0 = re.match(r'^RESULT_ET\:\s*([0-9]+)\s*$', lin)
+            if m0 is not None:
+                result_et = int(m0.group(1))
+                continue
+            m0 = re.match(r'^IMAGE_PATH\:(.+)$', lin)
+            if m0 is not None:
+                raw_image = m0.group(1)
+                continue
+            oo.write(lin+'\n')
+        oo.close()
+
+        command = os.path.join(os.path.dirname(__file__), 'image_loader.py')
+        command += ' -x expreview_cumulative'
+        command += ' -d '+ self._ex._dir
+        command += ' -i '+ 'data00.xvg'
+        if fromdate is not None:
+            command += ' -f '+ fromdate
+        if tilldate is not None:
+            command += ' -t '+ tilldate
+        if regen_cache:
+            command += ' -u'
+        command += ' -s '+ scale
+        command += ' -r' + ','.join(map(str,__ratlist))
+        command += ' -y ' + yunits
+        if fastpreview:
+            command += ' -p '
+        print command
+
+        pp = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+        output,err = pp.communicate()
+        oo = open(DQGENLOG, 'w+')
+        for lin in output.split('\n'):
+            m0 = re.match(r'^RESULT_BT\:\s*([0-9]+)\s*$', lin)
+            if m0 is not None:
+                result_bt = int(m0.group(1))
+                continue
+            m0 = re.match(r'^RESULT_ET\:\s*([0-9]+)\s*$', lin)
+            if m0 is not None:
+                result_et = int(m0.group(1))
+                continue
+            m0 = re.match(r'^IMAGE_PATH\:(.+)$', lin)
+            if m0 is not None:
+                cum_image = m0.group(1)
+                continue
+            oo.write(lin+'\n')
+        oo.close()
+        
+        _fromdate = dq.tu.lower_day(result_bt) if fromdate == None else int(fromdate)
+        _tilldate = dq.tu.lower_day(result_et) if tilldate == None else int(tilldate)
 
         self._tmpl.reset();
         self._tmpl.sub('expcode', code)
@@ -67,15 +113,18 @@ class ExperimentReview(Page):
         self._tmpl.sub('ratcheckbox', mkCheckBox(self._selected_rats, 'selectedrats'))
         self._tmpl.sub('unitscombo', mkComboBox({'meters':'meters','turns':'turns'}, yunits, 'yunits'))
         self._tmpl.sub('scalecombo', mkComboBox({'5:3':'50%','7.5:4.5':'75%','10:6':'100%'}, scale, 'scale'))
-        self._tmpl.sub('fromdate', mkDateCombo(ip0.bt, ip0.et, self._fromdate, 'fromdate', addspecial=['hour_ago']) )
-        self._tmpl.sub('tilldate', mkDateCombo(ip0.bt, ip0.et, self._tilldate, 'tilldate', addspecial=['now']) )
+        self._tmpl.sub('fromdate', mkDateCombo(result_bt, result_et, _fromdate, 'fromdate', addspecial=['hour_ago']) )
+        self._tmpl.sub('tilldate', mkDateCombo(result_bt, result_et, _tilldate, 'tilldate', addspecial=['now']) )
         self._tmpl.sub('nrats', self._ex.nrats);
-        self._tmpl.sub('simplot', '/plotdata/'+ir0.getImage(absolute=False) )
-        self._tmpl.sub('cumplot', '/plotdata/'+ir1.getImage(absolute=False) )
+        self._tmpl.sub('simplot', '/plotdata/'+raw_image )
+        self._tmpl.sub('cumplot', '/plotdata/'+cum_image )
         self._tmpl.sub('regenchecked', '')
         
         self._tmpl.sub('download_simplot_png', '/expreview/download'+mkGetRequest(code=code, ratlist=','.join(map(str,__ratlist)), \
-            scale=scale, yunits=yunits, fromdate=self._fromdate, tilldate=self._tilldate, imgtyp='raw', fmt='png') )
+            scale=scale, yunits=yunits, fromdate=_fromdate, tilldate=_tilldate, imgtyp='raw', fmt='png') )
+        
+        self._tmpl.sub('download_simplot_raw', '/expreview/csv'+mkGetRequest(code=code, ratlist=','.join(map(str,__ratlist)), \
+            yunits=yunits, fromdate=_fromdate, tilldate=_tilldate) )        
         
         return self._tmpl.string
     
@@ -113,7 +162,55 @@ class ExperimentReview(Page):
         return static.serve_file(path, "application/x-download",
                                  "attachment", os.path.basename(path))
 
-        
         return self._tmpl.string
     
     download.exposed = True
+    
+    def csv(self, code=None, ratlist=None, yunits='meters', regen_cache=True,
+              fromdate=None, tilldate=None):
+        
+        if code is None:
+            return 'Specify code!'
+        self._ex = Experiment(os.path.join(self._edir, code))
+        
+        if (ratlist is not None):
+            self._selected_rats = dict.fromkeys(range(1, self._ex.nrats+1), False)
+            for i in map(int, ratlist.split(',')):
+                self._selected_rats[i] = True
+        else:
+            self._selected_rats = dict.fromkeys(range(1, self._ex.nrats+1), True)
+        __ratlist = [k for k,v in self._selected_rats.iteritems() if v]
+        
+        command = os.path.join(os.path.dirname(__file__), 'csv_loader.py')
+        command += ' -d '+ self._ex._dir
+        command += ' -i '+ 'data00.xvg'
+        if fromdate is not None:
+            command += ' -f '+ fromdate
+        if tilldate is not None:
+            command += ' -t '+ tilldate
+        if regen_cache:
+            command += ' -u'
+        command += ' -r' + ','.join(map(str,__ratlist))
+        command += ' -y ' + yunits
+
+        print command
+        resultfile = None
+        pp = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE)
+        output,err = pp.communicate()
+        oo = open(DQGENLOG, 'w+')
+        for lin in output.split('\n'):
+            m0 = re.match(r'^CSV_PATH\:(.+)$', lin)
+            if m0 is not None:
+                resultfile = m0.group(1)
+                continue
+            oo.write(lin+'\n')
+        oo.close()
+
+        if resultfile is None:
+            raise(RuntimeError, 'Error in execution of csv_loader!')
+        print resultfile
+
+        return static.serve_file(resultfile, "application/x-download",
+                                 "attachment", os.path.basename(resultfile))
+
+    csv.exposed = True    
