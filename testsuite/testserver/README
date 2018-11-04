@@ -12,7 +12,7 @@ Three configuration files should be generated and edited to make the program wor
 1. SERVER.CONF
 
   All configuration of SERVER.CONF can be copied from SERVER.CONF.EXAMPLE file. Note that 
-<tools.staticdir.dir> parameter commonly should be equal to <root.workingDir> of PARAMETERS.CONF.
+<tools.staticdir.dir> parameter of [/plotdata] commonly should be equal to <root.workingDir> of PARAMETERS.CONF.
 If <tools.auth_digest.on> is set to *True* then htdigest file should be create in the same directory.
 The following strings should be inserted into htdigest:
 

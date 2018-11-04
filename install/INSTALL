@@ -1,0 +1,103 @@
+
+*******************************
+
+    Dear user!
+
+*******************************
+
+We are glad that you select our software for usage. Please, read the
+following instructions.
+
+
+
+# BUILDING
+
+Install required software (see Requirements section). In **Debian**
+the following lines can be used:
+
+    apt install python python-numpy python-scipy \
+      python-matplotlib python-libxml2 python-serial
+
+Cherrypy should be installed via pip:
+
+    apt install python-pip # or python2-pip
+    pip2 install cherrypy
+
+Then, inialize _textreader_ submodule:
+
+    git submodule init
+    git submodule update
+    git submodule sync
+
+Next, build & install _textreader_:
+
+    sudo apt install cython
+    cd textreader
+    python setup.py build
+    sudo python setup.py install
+
+For details, please follow instructions from the site:
+    https://github.com/WarrenWeckesser/textreader
+
+No additional specific builds are required for running 
+the WSGI server and for working of libdaq libraries.
+
+# QUICK START
+
+First, connect the device and be sure that it works and appears in /dev.
+Second, write udev rule and reboot 
+(do not forget to correct username in udevfile):
+
+    cp install/50-usb.rules /etc/udev/rules.d/
+    systemct reboot -i
+
+Now, the device is always appear as `/dev/devLOGGER`. Then, you can test if the
+logger script `logger.py` works. 
+
+    mkdir ~/tmp
+    cd ~/tmp
+    ~/ASPAM_webinterface/server/daq/logger.py
+    ...
+    <Ctrl+C>
+
+Now you can verify if proper files were created and you see timestamp and count
+numbers like the following:
+
+    # timestamp  channel-0 channel-1 channel-2 channel-3 channel-4 channel-5 channel-6 channel-7 channel-8 channel-9 channel-10 channel-11
+#
+ 1541340440    0    0    0    0    0    0    0    0    0    0    0    0
+ 1541340450    0    0    0    0    0    0    0    0    0    0    0    0
+ 1541340460    0    0    0    0    0    0    0    0    0    0    0    0
+ 1541340470    0    0    0    0    0    0    0    0    0    0    0    0
+
+
+Go to testsuite/testserver folder and edit *conf files. See corresponding
+README file for details. 
+
+Go to server/src and run:
+
+    ./run.py
+
+# SHARE CONTROL
+
+If your computer do not have its white ip, you need to forward ports to the
+server, which has an external access.
+
+@todo: write this chapter!
+
+# REQUIREMENTS
+
+Follwing libraries are required:
+
+    numpy, scipy, cherrypy, matplotlib-1.5, iniparse, libxml2,
+ serial
+
+
+# SETTING UP
+
+    You should set up path to server directory in server/src/config.py and put
+*.conf files in server directory. Look in testsuite/testserver for working
+examples.
+
+
+
