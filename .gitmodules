@@ -1,0 +1,3 @@
+[submodule "textreader"]
+	path = textreader
+	url = ../../WarrenWeckesser/textreader

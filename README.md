@@ -15,6 +15,12 @@ This library is used by Web-interface to separate day and night run.
 
 * *testsuite* - testing libraries including *artificial rat*. 
 
+# Dependencies
+
+We use _numpy_, _matplotlib_, _pickle_.  
+Also we use _textreader_ repository as a sumodule. It helps in fast opening 
+large text files.
+
 # Licensing
 
 ASPAM\_webinterface is *not* the part of ASPAM project. 
