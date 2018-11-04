@@ -28,7 +28,7 @@ def connect(dev = None, ntry=-1):
       print(sys.exc_info()[1])
 #  while len(sr.read(1))>0: pass
   if status_ok:
-    sr.write("\n")
+    sr.write("echo 0\r")
     time.sleep(1)
     sr.flushInput()
     return sr
@@ -215,7 +215,7 @@ else:
     while True:
       try:
         sr.flushInput()
-        sr.write("cnt\n")
+        sr.write("cnt\r")
         s = sr.readline()
       except (serial.serialutil.SerialException, serial.termios.error) as err:
         print("%s Error communicating to device: %s" % (timestamp(),str(err)))
