@@ -1,6 +1,6 @@
 #!/usr/bin/python
 import os, sys, serial, time, argparse, glob, random, signal, ctypes
-import os.path
+import os.path, termios
 dev_pat = "/dev/LOGGER*"
 
 libc = ctypes.cdll.LoadLibrary("libc.so.6")
@@ -28,7 +28,7 @@ def connect(dev = None, ntry=-1):
       print(sys.exc_info()[1])
 #  while len(sr.read(1))>0: pass
   if status_ok:
-    sr.write("echo 0\r")
+    sr.write("\recho 0\r")
     time.sleep(1)
     sr.flushInput()
     return sr
@@ -217,7 +217,7 @@ else:
         sr.flushInput()
         sr.write("cnt\r")
         s = sr.readline()
-      except (serial.serialutil.SerialException, serial.termios.error) as err:
+      except (serial.serialutil.SerialException, termios.error) as err:
         print("%s Error communicating to device: %s" % (timestamp(),str(err)))
         sr.close()
         time.sleep(1)
@@ -245,7 +245,11 @@ else:
     
       vals_dif = []
       for i in xrange(nchan):
-        vals_dif.append(vals[i] - vals_prev[i])
+        # it occurs when hard reconnect
+        if vals[i] < vals_prev[i]:
+            vals_dif.append(0)
+        else:
+            vals_dif.append(vals[i] - vals_prev[i])
     
       vals_prev = vals
     
