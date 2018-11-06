@@ -38,9 +38,33 @@ Next, build & install _textreader_:
 
 For details, please follow instructions from the site:
     https://github.com/WarrenWeckesser/textreader
-
+    
 No additional specific builds are required for running 
 the WSGI server and for working of libdaq libraries.
+
+# SYSTEM SETTINGS
+    
+Turn off ModemManager to avoid its access to the device.
+
+    systemctl disable ModemManager
+    systemctl stop ModemManager
+
+Turn on NTP synchronization:
+
+1. Be sure that _systemd-timesyncd_ is enabled in `systemctl`.
+
+2. Activate synchronization:
+
+    timedatectl set-ntp true
+    
+3. Edit time server configuration in `/etc/systemd/timesyncd.conf`
+
+4. Restart the service `systemd-timesyncd`
+
+5. Be sure that time was synced:
+
+    timedatectl status
+
 
 # QUICK START
 
