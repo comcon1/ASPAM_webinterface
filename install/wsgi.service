@@ -1,0 +1,16 @@
+[Unit]
+Description=WSGI script service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=aspam
+WorkingDirectory=/home/aspam/ASPAM_webinterface/install
+ExecStart=./wsgi-ratwell.sh
+ExecStop=pkill run.py
+
+StandardOutput=console
+
+[Install]
+WantedBy=multi-user.target

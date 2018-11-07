@@ -102,6 +102,13 @@ Go to server/src and run:
 
     ./run.py
 
+It's better to run WSGI as service. 
+
+    sudo cp wsgi.service /lib/systemd/system/
+    systemctl daemon-reload
+    systemctl enable wsgi
+    systemctl start wsgi
+
 # SHARE CONTROL
 
 If your computer do not have its white ip, you need to forward ports to the

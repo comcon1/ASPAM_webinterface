@@ -48,6 +48,7 @@ print get_ha1
 if __name__ == '__main__':
     root_app = cherrypy.tree.mount(root, "/", curconf)
     root_app.config['/']['tools.auth_digest.get_ha1'] = get_ha1
+    cherrypy.engine.signals.subscribe() 
     cherrypy.engine.subscribe( 'stop', partial(experiment.actor_finish_active_experiment, dqc) )
     cherrypy.engine.start()
-    cherrypy.engine.block() 
+    cherrypy.engine.block()
