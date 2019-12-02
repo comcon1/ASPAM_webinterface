@@ -17,9 +17,15 @@ This library is used by Web-interface to separate day and night run.
 
 # Dependencies
 
+**Attention!** ASPAM project works with Python2.
+
 We use _numpy_, _matplotlib_, _pickle_.  
 Also we use _textreader_ repository as a sumodule. It helps in fast opening 
 large text files.
+
+# Installing
+
+To run server with testing configuration, please create `testsuite/testserver/parameters.conf` on the base of `testsuite/testserver/parameters.conf.example`, and do the same thing for `testsuite/testserver/server.conf`. To run server with normal configuration, copy the folder `testsuite/testserver` somewhere and point this path defining DQSROOTDIR in `server/src/config.py` file.
 
 # Licensing
 
