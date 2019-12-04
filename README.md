@@ -19,11 +19,13 @@ This library is used by Web-interface to separate day and night run.
 
 **Attention!** ASPAM project works with Python2.
 
-We use _numpy_, _matplotlib_, _pickle_.  
-Also we use _textreader_ repository as a sumodule. It helps in fast opening 
-large text files.
+We use _numpy_, _scipy_, _cherrypy_, _matplotlib-1.5+_, _iniparse_, _libxml2_, _pickle_.  
+Also we use _textreader_ repository as a sumodule as it helps in fast opening large text files. 
+You need to install _textreader_ by hands: please follow installing instructions from its [github page](https://github.com/WarrenWeckesser/textreader).
 
 # Installing
+    
+No specific builds are required for running the WSGI server and for working of **libdaq** libraries.
 
 To run server with testing configuration, please create `testsuite/testserver/parameters.conf` on the base of `testsuite/testserver/parameters.conf.example`, and do the same thing for `testsuite/testserver/server.conf`. To run server with normal configuration, copy the folder `testsuite/testserver` somewhere and point this path defining DQSROOTDIR in `server/src/config.py` file.
 

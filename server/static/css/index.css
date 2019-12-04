@@ -1,4 +1,4 @@
-body, html { font-face: Arial; font-size: 8pt; }
+body, html { font-face: Arial; font-size: 14pt; }
 .ratcheckbox label:after { display:block; content: ''; }
 ul.navi {list-style-type: none; font-size: 18pt;}
 ul.navi li { display: block; margin: 2px auto; float: left;}

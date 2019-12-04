@@ -144,12 +144,12 @@ class NewExperimentPage(Page):
         self._tmpl.sub('prog_name', DQSPRGNAME)
         self._tmpl.sub('prog_version', DQSVERSION)
         
-        self._tmpl.sub('code', 'enter code')
+        self._tmpl.sub('code', 'enter_code')
         self._tmpl.sub('comment', 'enter experiment name')
         self._tmpl.sub('daystart', params.default.experiment.daystart)
         self._tmpl.sub('morning', params.default.experiment.morning)
         self._tmpl.sub('evening', params.default.experiment.evening)
-        self._tmpl.sub('nrats', '2')
+        self._tmpl.sub('nrats', '12')
         return self._tmpl.string
     
     index.exposed = True
