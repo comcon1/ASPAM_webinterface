@@ -1,6 +1,7 @@
 #!/usr/bin/python
 import os, sys, serial, time, argparse, glob, random, signal, ctypes
 import os.path, termios
+from datetime import datetime
 dev_pat = "/dev/LOGGER*"
 
 libc = ctypes.cdll.LoadLibrary("libc.so.6")
@@ -16,7 +17,7 @@ def connect(dev = None, ntry=-1):
       if ntry > 0: ntry-=1
       if not dev: dev=dev_find()
       if dev:
-        sr = serial.Serial(port=dev, timeout=0.5, baudrate=115200)
+        sr = serial.Serial(port=dev, timeout=2.0, baudrate=115200)
         status_ok = 1
         break
       else:
@@ -213,10 +214,13 @@ else:
     if not is_continue: 
         out.write("# LOGGER started @ %s\n#\n" % time.strftime("%Y-%m-%d %H:%M:%S"))
     while True:
+      tBeforeComReq = time.time()
       try:
         sr.flushInput()
         sr.write("cnt\r")
         s = sr.readline()
+        sr.write("adc 0\r")
+        sadc = sr.readline()
       except (serial.serialutil.SerialException, termios.error) as err:
         print("%s Error communicating to device: %s" % (timestamp(),str(err)))
         sr.close()
@@ -225,6 +229,8 @@ else:
         sr = connect() #serial.Serial(port=dev_find(), timeout=0.5)
         # while len(sr.read(1))>0: pass
         print("%s Reconnected to device" % timestamp())
+      finally:
+        tAfterComReq = time.time()
     
       try:
         vals = map(int, s.split())
@@ -253,11 +259,14 @@ else:
     
       vals_prev = vals
     
-      out.write("%11d" % time.time())
+      tnow = time.time()
+
+      out.write("%11d" % tnow)
       out.write(''.join(map(lambda v: "%5d" % v, vals_dif)) + "\n")
       out.flush()
+      print "%-27s ==> %-6s | %-8.3f" % ( str(datetime.now()), sadc.strip(), \
+              (int((tAfterComReq-tBeforeComReq)*1000)) )
     
-      tnow = time.time()
       icycle = int((tnow - tstart) / period)
       tnext = tstart + (icycle + 1) * period
       time.sleep(tnext - tnow)
