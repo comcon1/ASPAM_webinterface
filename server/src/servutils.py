@@ -48,6 +48,8 @@ class Page(object):
         self._tmpl.sub('type', str(type(e)).split("'")[1])
         self._tmpl.sub('message', str(e) )
         
+        import traceback
+        traceback.print_exc()
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
         self._tmpl.sub('position', '%s:%d' % (fname, exc_tb.tb_lineno) )
