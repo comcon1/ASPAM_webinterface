@@ -7,7 +7,7 @@ class Action(Page):
     
     def __init__(self):
         self._actdict = {}
-        super(Action, self).__init__('../templates/redirect_page.xml')
+        super(Action, self).__init__(os.path.join(DQTEMPLDIR,'redirect_page.xml'))
 
     def registerActor(self, actor_alias, actor_function):
         if not (hasattr(actor_function, '__call__')):

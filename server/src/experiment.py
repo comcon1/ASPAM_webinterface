@@ -67,7 +67,7 @@ class Experiment(object):
         
 
     def _create(self):
-        xx = lx.parseFile(os.path.join('..','templates','emptyExperiment.xml'))
+        xx = lx.parseFile(os.path.join(DQTEMPLDIR,'emptyExperiment.xml'))
         ch = xx.xpathEval('/experiment')[0]
         ch.setProp('nrats', str(self.nrats))
         ch.setProp('datestart', str(int(time.time())))
@@ -137,7 +137,7 @@ class Experiment(object):
 class NewExperimentPage(Page):
     
     def __init__(self):
-        super(NewExperimentPage, self).__init__('../templates/one_experiment.xml')
+        super(NewExperimentPage, self).__init__(os.path.join(DQTEMPLDIR,'one_experiment.xml'))
     
     def index(self):      
         self._tmpl.reset()

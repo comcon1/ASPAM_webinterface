@@ -14,7 +14,7 @@ from experiment import Experiment
 class RatStatistics(Page):
     
     def __init__(self):
-        super(RatStatistics, self).__init__('../templates/ratstat.xml') 
+        super(RatStatistics, self).__init__(os.path.join(DQTEMPLDIR,'ratstat.xml'))
 
     def index(self, code=None, ratlist=None, nrats=None, scale='5:3', yunits='meters',
               regen_cache=False, fromdate=None, tilldate=None, dayflag=3):
